@@ -41,6 +41,9 @@ echo $KIVY_DEPS_ROOT
 pip3 install "kivy[base]" kivy_examples --no-binary kivy
 pip3 install kivymd
 
+# Install other project's libraries
+pip3 install pyserial
+
 # enable hardware acceleration
 sudo adduser "$USER" render
 
