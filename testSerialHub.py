@@ -1,6 +1,6 @@
 import serial
 import argparse
-import serial.rs485 as settings
+
 
 def send_command2Hub(hub_command:str) -> list:
     """
@@ -12,7 +12,6 @@ def send_command2Hub(hub_command:str) -> list:
         print(f"send command: {hub_command} to Hub device: {ser.name}")
         encoded_command = bytes.fromhex(hub_command)
         print(f"encoded_command: {encoded_command}")
-        ser.rs485_mode = settings.RS485Settings()
         ser.write(encoded_command)
         #ser.flush()
         response = ser.read(9) # read 9 bytes from serial connection
