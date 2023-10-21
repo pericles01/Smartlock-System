@@ -14,13 +14,9 @@ def send_command2Hub(hub_command:str) -> list:
         print(f"encoded_command: {encoded_command}")
         ser.write(encoded_command)
         #ser.flush()
-        while(1):
-            readByte = serial.in_waiting()
-            if readByte:
-                response = ser.read(readByte) # read 9 bytes from serial connection
-                print(f"Response Hub: {response}")
-            else:
-                break
+        while ser.in_waiting():
+            response = ser.read() # read 9 bytes from serial connection
+            print(f"Response Hub: {response}")
 
     if response:
         sequences = response.hex("-").split("-") # list of bytes sequences
