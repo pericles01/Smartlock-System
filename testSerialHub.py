@@ -1,23 +1,51 @@
 import serial
-import binascii
+
+def send_command2Hub(hub_command:str) -> list:
+    """
+    :param hub_command: The string must contain two hexadecimal digits per byte,
+    with ASCII whitespace being ignored.
+    :return: A list, which contains the door's status
+    """
+    with serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=2) as ser:
+        print(ser.name)
+        encoded_command = bytes.fromhex(hub_command)
+        print(f"encoded_command: {encoded_command}")
+        ser.write(encoded_command)
+        #ser.flush()
+        response = ser.read(9) # read 9 bytes from serial connection
+        print(f"Response Hub: {response}")
+
+    if response:
+        sequences = response.hex("-").split("-") # list of bytes sequences
+        assert len(sequences) == 9, "unknown response's length"
+        door_status = sequences[3:5]
+        print(f"Door Status: {door_status}")
+        return door_status
+    else:
+        raise ValueError("No response from Hub")
+
 
 if __name__ == "__main__":
 
-    STX = 0x02
-    ADDR = 0x00
-    CMD = 0x30
-    ETX = 0x03
-    SUM = 0x35
-    #check_SUM = hex(STX + ADDR + CMD + ETX)[-2:]
-    status_command = "0200300335" #serial.to_bytes([STX, ADDR, CMD, ETX, SUM])
-    encoded_command = bytes.fromhex(status_command)
-    print(f"encoded_command: {encoded_command}")
-    sequences = encoded_command.hex("-").split("-")
-    # a = hex(int(0x35))
+    status_command = "0200300335"
+    open_command = "0200310336"
+    try:
+        status = send_command2Hub(status_command)
+    except (ValueError, AssertionError):
+        # try again
+        status = send_command2Hub(status_command)
 
-    with serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=2) as ser:
-        print(ser.name)
-        ser.write(bytes.fromhex(status_command))
-        ser.flush()
-        response = ser.read(9)
-        print(f"Response Hub: {response}")
+    print(''.join(status))
+
+    # test_response = '02003500000000033A'
+    # encoded_response = bytes.fromhex(test_response)
+    #
+    # sum = hex(0x02 + 0x00 + 0x31 + 0x03)
+    # seq = encoded_response.hex("-").split("-")
+    # length = len(seq)
+    # door_data = seq[3:5]
+    # str_data = ''.join(door_data)
+
+
+
+
