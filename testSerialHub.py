@@ -8,7 +8,10 @@ def send_command2Hub(hub_command:str) -> list:
     with ASCII whitespace being ignored.
     :return: A list, which contains the door's status
     """
-    with serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=2, tscts=True, dsrdtr=True) as ser:
+    with serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=2,
+                       rtscts=True,
+                       #dsrdtr=True
+                       ) as ser:
         print(f"send command: {hub_command} to Hub device: {ser.name}")
         encoded_command = bytes.fromhex(hub_command)
         print(f"encoded_command: {encoded_command}")
