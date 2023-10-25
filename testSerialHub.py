@@ -15,28 +15,25 @@ def send_command2Hub(hub_command:str, c_type:str ) -> tuple|None:
                        rtscts=True,
                        dsrdtr=True,
                        ) as ser:
-        print(f"send {c_type} command: {hub_command} to Hub device: {ser.name}")
-        encoded_command = bytes.fromhex(hub_command) #serial.to_bytes([0x02, 0x00, 0x30, 0x03, 0x35])#
-        print(f"encoded_command: {encoded_command}")
-        #print(f"encoded serial command: {serial.to_bytes([0x02, 0x00, 0x30, 0x03, 0x35])}")
+        print(f"! send {c_type} command: {hub_command} to Hub device: {ser.name}")
+        encoded_command = bytes.fromhex(hub_command)
+        # print(f"encoded_command: {encoded_command}")
         ser.write(encoded_command)
         response = ser.read(9) # read 9 bytes from serial connection
 
     if c_type == "status":
-        print(f"Response Hub: {response}")
+        # print(f"Response Hub: {response}")
         if response:
             sequences = response.hex("-").split("-") # list of bytes sequences
-            print(f"Response Hub hex sequence: {sequences}")
+            print(f"! Response Hub hex sequence: {sequences}")
             assert len(sequences) == 9, "unknown response's length"
             DATA1, DATA2 = sequences[3:5]
             int_DATA1 = int(DATA1, 16)
             int_DATA2 = int(DATA2, 16)
-            #bin_DATA1 = bin(int_DATA1)
-            #bin_DATA2 = bin(int_DATA2)
 
-            print("* Door Status")
-            print(f"! Data1: {bin(int_DATA1)}")
-            print(f"! Data2: {bin(int_DATA2)}")
+            # print("* Door Status")
+            # print(f"! Data1: {bin(int_DATA1)}")
+            # print(f"! Data2: {bin(int_DATA2)}")
             return int_DATA1, int_DATA2
         else:
             raise ValueError("No response from Hub")
