@@ -16,6 +16,7 @@ def send_command2Hub(hub_command:str, c_type:str ) -> tuple|None:
                        dsrdtr=True,
                        ) as ser:
         print(f"! send {c_type} command: {hub_command} to Hub device: {ser.name}")
+        print(' ')
         encoded_command = bytes.fromhex(hub_command)
         # print(f"encoded_command: {encoded_command}")
         ser.write(encoded_command)
@@ -25,7 +26,7 @@ def send_command2Hub(hub_command:str, c_type:str ) -> tuple|None:
         # print(f"Response Hub: {response}")
         if response:
             sequences = response.hex("-").split("-") # list of bytes sequences
-            print(f"! Response Hub hex sequence: {sequences}")
+            # print(f"! Response Hub hex sequence: {sequences}")
             assert len(sequences) == 9, "unknown response's length"
             DATA1, DATA2 = sequences[3:5]
             int_DATA1 = int(DATA1, 16)
@@ -41,7 +42,8 @@ def send_command2Hub(hub_command:str, c_type:str ) -> tuple|None:
         print("-------------------------------------")
         print("! Check door status after opening...")
         print("-------------------------------------")
-        send_command2Hub("0200300335", "status")
+        print(' ')
+        return send_command2Hub("0200300335", "status")
 
 
 if __name__ == "__main__":
@@ -91,6 +93,11 @@ if __name__ == "__main__":
         
         with open("doors_info.json", mode='w') as f:
             json.dump(door_info, f, indent=2)
+        
+        print("-----------* Doors info *-------------")
+        print(door_info)
+        print("-------------------------------------")
+        print(' ')
         
 
 
