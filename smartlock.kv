@@ -6,23 +6,26 @@
         md_bg_color: "8D6E63"
         WelcomeScreen:
 
-<LoginOptionButton>:
+<LoginOptionCard>:
     padding: dp(5), dp(5), dp(5), dp(15)
     size_hint: .8, .8
     pos_hint: {"center_x": .5, "center_y": .5}
-    MDBoxLayout:
-        orientation: "vertical"
-        MDIconButton:
-            icon: root.icon_name
-            pos_hint: {"center_x": .5, "center_y": .5}
-            size_hint: 1, .6
+    orientation: "vertical"
 
-        MDLabel:
-            text: root.text_option
-            adaptive_size: True
-            color: "4FC3F7"
-            pos_hint: {"center_x": .5, "center_y": .5}
-            bold: True
+    MDIconButton:
+        icon: root.icon_name
+        icon_size: "60sp"
+        pos_hint: {"center_x": .5, "center_y": .5}
+        size_hint: 1, .6
+        on_press: root.show_func(root.text_option)
+
+    MDLabel:
+        text: root.text_option
+        #size: self.texture_size
+        adaptive_size: True
+        color: "4FC3F7"
+        pos_hint: {"center_x": .5, "center_y": .5}
+        bold: True
 
 <WelcomeScreen@FloatLayout>:
     name: "welcome"
@@ -53,22 +56,22 @@
             padding: dp(50), dp(20), dp(50), dp(50),
 
             MDFloatLayout:
-                LoginOptionButton:
+                LoginOptionCard:
                     icon_name: "account-card"
                     text_option: "Unlock with RFID"
 
             MDFloatLayout:
-                LoginOptionButton:
+                LoginOptionCard:
                     icon_name: "numeric"
                     text_option: "Unlock with PIN"
 
             MDFloatLayout:
-                LoginOptionButton:
+                LoginOptionCard:
                     icon_name: "qrcode-scan"
                     text_option: "Unlock with QR Code"
 
             MDFloatLayout:
-                LoginOptionButton:
+                LoginOptionCard:
                     icon_name: "face-recognition"
                     text_option: "Unlock with Face Recognition"
 

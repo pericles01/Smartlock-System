@@ -3,7 +3,7 @@ from kivymd.uix.card import MDCard
 from kivymd.color_definitions import colors
 from kivymd.uix.screenmanager import MDScreenManager
 from kivy.properties import ObjectProperty, StringProperty
-#from kivymd.uix.button import MDFillRoundFlatIconButton
+from kivymd.uix.button import MDIconButton #MDFillRoundFlatIconButton
 #from kivy.metrics import dp
 #from kivy.lang import Builder
 
@@ -25,16 +25,17 @@ class NavigationScreenManager(MDScreenManager):
             self.transition.direction = "right"
             self.current = screen_name
 
-class LoginOptionButton(MDCard):
+class LoginOptionCard(MDCard):
     text_option = StringProperty()
     icon_name = StringProperty()
     def __init__(self, **kwargs):
-        super(LoginOptionButton, self).__init__(**kwargs)
-        self.md_bg_color: colors["LightBlue"]['300']
-        self.style = "filled"
+        super(LoginOptionCard, self).__init__(**kwargs)
+        self.style = "filled" #"outlined"
         self.line_color = (0.2, 0.2, 0.2, 0.8)
-
-
+        self.shadow_offset = (0, -1)
+    def show_func(self, name:str):
+        print(f"{name}")
+        print("------------")
 
 
 class SmartlockApp(MDApp):
