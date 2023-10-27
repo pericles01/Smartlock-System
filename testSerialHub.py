@@ -62,6 +62,12 @@ if __name__ == "__main__":
 
     # status_command = "0200300335"
     # open_command = "0200310336"
+    STX = "02"
+    ADDR = "00" if not position else "0" + hex(position-1)[-1]
+    CMD = "31" if args.open else "30"
+    ETX = "03"
+    SUM = hex(int(STX, 16) + int(ADDR, 16) + int(CMD, 16) + int(ETX, 16))[-2:]
+    
     command = STX + ADDR + CMD + ETX + SUM
     command_type = "open" if args.open else "status"
     
