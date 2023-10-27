@@ -2,59 +2,43 @@ import serial
 import argparse
 import json
 
-
-def send_command2Hub(hub_command:str, c_type:str ) -> tuple|None:
+def send_command2Hub(hub_command:str) -> list:
     """
     :param hub_command: The string must contain two hexadecimal digits per byte,
     with ASCII whitespace being ignored.
-    :return: A tuple of length 2 containing the door's status in the form door_status = [DATA1, DATA2]
-    DATA1 & DATA2 are hexadecimal status of the doors. DATA1 represents the status from door 1 to door 8
-    and DATA2 represents the status from door 9 to door 16
+    :return: A list, which contains the door's status
     """
-    with serial.Serial('/dev/ttyUSB0', baudrate=19200, timeout=2,
+    with serial.Serial('/dev/ttyUSB0', baudrate=9600, timeout=2,
                        rtscts=True,
-                       dsrdtr=True,
+                       #dsrdtr=True
                        ) as ser:
-        print(f"! send {c_type} command: {hub_command} to Hub device: {ser.name}")
-        print(' ')
+        print(f"send command: {hub_command} to Hub device: {ser.name}")
         encoded_command = bytes.fromhex(hub_command)
-        # print(f"encoded_command: {encoded_command}")
+        print(f"encoded_command: {encoded_command}")
         ser.write(encoded_command)
+        #ser.flush()
         response = ser.read(9) # read 9 bytes from serial connection
+        print(f"Response Hub: {response}")
 
-    if c_type == "status":
-        # print(f"Response Hub: {response}")
-        if response:
-            sequences = response.hex("-").split("-") # list of bytes sequences
-            # print(f"! Response Hub hex sequence: {sequences}")
-            assert len(sequences) == 9, "unknown response's length"
-            DATA1, DATA2 = sequences[3:5]
-            int_DATA1 = int(DATA1, 16)
-            int_DATA2 = int(DATA2, 16)
-
-            # print("* Door Status")
-            # print(f"! Data1: {bin(int_DATA1)}")
-            # print(f"! Data2: {bin(int_DATA2)}")
-            return int_DATA1, int_DATA2
-        else:
-            raise ValueError("No response from Hub")
+    if response:
+        sequences = response.hex("-").split("-") # list of bytes sequences
+        assert len(sequences) == 9, "unknown response's length"
+        door_status = sequences[3:5]
+        print(f"Door Status: {door_status}")
+        return door_status
     else:
-        print("-------------------------------------")
-        print("! Check door status after opening...")
-        print("-------------------------------------")
-        print(' ')
-        return send_command2Hub("0200300335", "status")
+        raise ValueError("No response from Hub")
 
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--open", action="store_true", help="send open command to Hub")
-    parser.add_argument("-p", "--position", type=int, default=None, help="enter the position of the door you want to open")
+    parser.add_argument("-o", "--open", action="store_true", help="send status command to Hub")
+    parser.add_argument("-pos", "--position", type=int, default=None, help="send status command to Hub")
     args = parser.parse_args()
+    
     position = args.position
-    pos2addr = dict()
     if args.open:
         assert position, "Please specify the number between 1 and 16 of the door to open"
         if position:
