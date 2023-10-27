@@ -1,0 +1,75 @@
+#: import utils kivy.utils
+#: set backgroundButtonColor "0277BD"
+
+<NavigationScreenManager>:
+    MDScreen:
+        md_bg_color: "8D6E63"
+        WelcomeScreen:
+
+<LoginOptionButton>:
+    padding: dp(5), dp(5), dp(5), dp(15)
+    size_hint: .8, .8
+    pos_hint: {"center_x": .5, "center_y": .5}
+    MDBoxLayout:
+        orientation: "vertical"
+        MDIconButton:
+            icon: root.icon_name
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: 1, .6
+
+        MDLabel:
+            text: root.text_option
+            adaptive_size: True
+            color: "4FC3F7"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            bold: True
+
+<WelcomeScreen@FloatLayout>:
+    name: "welcome"
+    BoxLayout:
+        orientation: "vertical"
+        AnchorLayout:
+            size_hint_y: .2
+            anchor_x: "right"
+            anchor_y: "top"
+            padding: dp(15)
+
+            MDFillRoundFlatIconButton:
+                md_bg_color: "4FC3F7"
+                icon: "login"
+                text: "Login Admin"
+        BoxLayout:
+            size_hint_y: .2
+            Label:
+                text: "Welcome!"
+                size: self.texture_size
+                pos_hint_x: .5
+                font_size: dp(30)
+                bold: True
+
+        GridLayout:
+            rows: 2
+            cols: 2
+            padding: dp(50), dp(20), dp(50), dp(50),
+
+            MDFloatLayout:
+                LoginOptionButton:
+                    icon_name: "account-card"
+                    text_option: "Unlock with RFID"
+
+            MDFloatLayout:
+                LoginOptionButton:
+                    icon_name: "numeric"
+                    text_option: "Unlock with PIN"
+
+            MDFloatLayout:
+                LoginOptionButton:
+                    icon_name: "qrcode-scan"
+                    text_option: "Unlock with QR Code"
+
+            MDFloatLayout:
+                LoginOptionButton:
+                    icon_name: "face-recognition"
+                    text_option: "Unlock with Face Recognition"
+
+
