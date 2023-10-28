@@ -1,52 +1,95 @@
 from kivy.lang import Builder
+from kivy.properties import StringProperty
+from kivy.uix.screenmanager import Screen
 
+from kivymd.icon_definitions import md_icons
 from kivymd.app import MDApp
+from kivymd.uix.list import OneLineIconListItem
 
 
-class Test(MDApp):
+Builder.load_string(
+    '''
+#:import images_path kivymd.images_path
+
+
+<CustomOneLineIconListItem>
+
+    IconLeftWidget:
+        icon: root.icon
+
+
+<PreviousMDIcons>
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: dp(20)
+
+        MDBoxLayout:
+            adaptive_height: True
+
+            MDIconButton:
+                icon: 'magnify'
+
+            MDTextField:
+                id: search_field
+                hint_text: 'Search icon'
+                on_text: root.set_list_md_icons(self.text, True)
+
+        RecycleView:
+            id: rv
+            key_viewclass: 'viewclass'
+            key_size: 'height'
+
+            RecycleBoxLayout:
+                padding: dp(10)
+                default_size: None, dp(48)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+'''
+)
+
+
+class CustomOneLineIconListItem(OneLineIconListItem):
+    icon = StringProperty()
+
+
+class PreviousMDIcons(Screen):
+
+    def set_list_md_icons(self, text="", search=False):
+        '''Builds a list of icons for the screen MDIcons.'''
+
+        def add_icon_item(name_icon):
+            self.ids.rv.data.append(
+                {
+                    "viewclass": "CustomOneLineIconListItem",
+                    "icon": name_icon,
+                    "text": name_icon,
+                    "callback": lambda x: x,
+                }
+            )
+
+        self.ids.rv.data = []
+        for name_icon in md_icons.keys():
+            if search:
+                if text in name_icon:
+                    add_icon_item(name_icon)
+            else:
+                add_icon_item(name_icon)
+
+
+class MainApp(MDApp):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.screen = PreviousMDIcons()
 
     def build(self):
-        self.theme_cls.material_style = "M3"
-        self.theme_cls.theme_style = "Dark"
-        return Builder.load_string(
-            '''
-MDScreen:
+        return self.screen
 
-    MDBottomNavigation:
-        #panel_color: "#eeeaea"
-        selected_color_background: "orange"
-        text_color_active: "lightgrey"
-
-        MDBottomNavigationItem:
-            name: 'screen 1'
-            text: 'Mail'
-            icon: 'gmail'
-            badge_icon: "numeric-10"
-
-            MDLabel:
-                text: 'Mail'
-                halign: 'center'
-
-        MDBottomNavigationItem:
-            name: 'screen 2'
-            text: 'Twitter'
-            icon: 'twitter'
-            badge_icon: "numeric-5"
-
-            MDLabel:
-                text: 'Twitter'
-                halign: 'center'
-
-        MDBottomNavigationItem:
-            name: 'screen 3'
-            text: 'LinkedIN'
-            icon: 'linkedin'
-
-            MDLabel:
-                text: 'LinkedIN'
-                halign: 'center'
-'''
-        )
+    def on_start(self):
+        self.screen.set_list_md_icons()
 
 
-Test().run()
+MainApp().run()
