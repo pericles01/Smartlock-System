@@ -12,6 +12,11 @@ class NavigationScreenManager(MDScreenManager):
             self.screen_stack.append(self.current)
             self.transition.direction = "left"
             self.current = screen_name
+        if screen_name == "welcome":
+            # empty the screen stack
+            self.screen_stack.clear()
+            self.current = screen_name
+
 
     def pop(self):
 
