@@ -1,11 +1,19 @@
 #:kivy 2.2.1
 #: import WelcomeView views.WelcomeView
+#: import LoginAdminView views.LoginAdminView
+#: import GlobalComponents views.GlobalComponents
 #: set backgroundButtonColor "0277BD"
 
 <NavigationScreenManager>:
     MDScreen:
         md_bg_color: "8D6E63"
+        name: "welcome"
         WelcomeScreen:
+
+    MDScreen:
+        md_bg_color: [35/255,59/255,54/255,1] #"8D6E63"
+        name: "login_admin"
+        LoginAdminView:
 
 
 

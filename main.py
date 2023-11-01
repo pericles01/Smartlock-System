@@ -27,8 +27,10 @@ class SmartlockApp(MDApp):
 
     def build(self):
         self.theme_cls.theme_style = 'Dark'
+        self.theme_cls.material_style = "M3"
+        self.theme_cls.primary_palette = "Blue"
+        self.load_all_kv_files("./views")
         self.manager = NavigationScreenManager()
-
         return self.manager #Builder.load_file("smartlock.kv")
 
 
