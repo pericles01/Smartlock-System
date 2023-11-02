@@ -1,4 +1,5 @@
 #: import GlobalComponents views.GlobalComponents
+#: import SetupView views.SetupView
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
 <Toolbar@MDTopAppBar>:
@@ -34,10 +35,7 @@
 
             MDScreen:
                 name: "setup"
-                VBoxLayout:
-                    MDLabel:
-                        text: "Setup screen"
-                        halign: "center"
+                SetupView:
 
             MDScreen:
                 name: "update"
@@ -53,7 +51,7 @@
                 spacing: dp(10)
                 DrawerClickableItem:
                     icon: "pinwheel"
-                    text_right_color: "#4a4939"
+                    text_right_color: "#4a4939" # white
                     text: "Set up"
                     on_press:
                         manager.current="setup"

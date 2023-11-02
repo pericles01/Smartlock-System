@@ -14,6 +14,7 @@
         size_hint_x : None
         width : 220
         pos_hint : {"center_x":.5}
+        #on_text_validate: root.login(app.manager)
 
     MDIconButton:
         icon: "eye-off"
@@ -79,9 +80,14 @@
         font_size : 15
         on_release: root.login(app.manager)
 
-    Widget:
+    MDLabel:
+        id: error_label
+        text: " " if root.login_successful else "wrong credentials. Please try again!!"
+        halign: "center"
         size_hint_y : None
         height : dp(20)
+        theme_text_color: "Error"
+        font_style: "Subtitle2"
 
 
 <LoginAdminView@FloatLayout>:
