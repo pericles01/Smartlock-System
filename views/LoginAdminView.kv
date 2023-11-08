@@ -31,21 +31,8 @@
     halign : "center"
     size_hint_y : None
     height : self.texture_size[1]
-    padding_y : 15
-
-<CoverImage@CoverBehavior+AsyncImage>:
-    fit_mode: "contain"
-
-<ImageCard@FloatLayout>:
-    size_hint_x : .7
     pos_hint : {"center_x":.5, "center_y":.5}
-    md_bg_color: app.theme_cls.primary_dark
-    CoverImage:
-        source: root.monkey_hello
-
-        size_hint : None, None
-        size : 50, 50 #self.texture_size
-        padding_y : 5
+    padding : dp(15)
 
 <LoginAdminCard>:
     size_hint : None,None
@@ -57,7 +44,11 @@
     spacing : 30
     orientation : "vertical"
 
-    CardLabel:
+    AsyncImage:
+        fit_mode: "fill"
+        pos_hint : {"center_x":.5, "center_y":.5}
+        source: root.login_image
+        size_hint : .9, .9
 
     MDTextField :
         id: username_field

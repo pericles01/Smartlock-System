@@ -56,10 +56,10 @@ if __name__ == "__main__":
     command_type = "open" if args.open else "status"
     
     try:
-        data1, data2 = send_command2Hub(command, command_type)
+        data1, data2 = send_command2Hub(command)
     except (ValueError, AssertionError):
         # try again
-        data1, data2 = send_command2Hub(command, command_type)
+        data1, data2 = send_command2Hub(command)
     
     if data1 is not None and data2 is not None:
         door_info = dict()

@@ -1,6 +1,27 @@
 
+<OkDialogContent>:
+    padding: dp(20)
+    MDBoxLayout:
+        pos_hint: {"center_x": .5, "center_y": .5}
+        orientation: "vertical"
+        spacing: dp(20)
+        MDRelativeLayout:
+            size_hint_y: .8
+            MDLabel:
+                id: text_label
+                halign: "center"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                font_style: "H6"
+        MDRelativeLayout:
+            MDRaisedButton:
+                id: ok_button
+                md_bg_color: app.theme_cls.primary_dark
+                pos_hint: {"center_x": .5, "center_y": .5}
+                text: "OK"
+                #on_press: root.dismiss()
 
-<SetupView@RelativeLayout>:
+
+<SetupView>:
     BoxLayout:
         orientation: "vertical"
         Widget:
@@ -33,7 +54,7 @@
                         MDLabel:
                             id: locker_number_label
                             md_bg_color: app.theme_cls.primary_dark # "D32F2F"
-                            text : '8'
+                            text : str(app.connected_doors) if app.connected_doors else "10"
                             bold: True
                             font_style : 'H6'
                             halign : "center"
