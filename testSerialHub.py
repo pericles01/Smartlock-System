@@ -1,6 +1,8 @@
 import serial
 import argparse
 import json
+import random
+import os
 
 def send_command2Hub(hub_command:str) -> list:
     """
@@ -37,7 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--open", action="store_true", help="send status command to Hub")
     parser.add_argument("-pos", "--position", type=int, default=None, help="send status command to Hub")
     args = parser.parse_args()
-    
+
     position = args.position
     if args.open:
         assert position, "Please specify the number between 1 and 16 of the door to open"
@@ -51,16 +53,16 @@ if __name__ == "__main__":
     CMD = "31" if args.open else "30"
     ETX = "03"
     SUM = hex(int(STX, 16) + int(ADDR, 16) + int(CMD, 16) + int(ETX, 16))[-2:]
-    
+
     command = STX + ADDR + CMD + ETX + SUM
     command_type = "open" if args.open else "status"
-    
+
     try:
         data1, data2 = send_command2Hub(command)
     except (ValueError, AssertionError):
         # try again
         data1, data2 = send_command2Hub(command)
-    
+
     if data1 is not None and data2 is not None:
         door_info = dict()
         cnt=0
@@ -75,10 +77,10 @@ if __name__ == "__main__":
             else: # 9 to 16
                 door_info[door_pos] = "open" if (data2 >> cnt) & 1 == 0 else "closed"
                 cnt+=1
-        
+
         with open("doors_info.json", mode='w') as f:
             json.dump(door_info, f, indent=2)
-        
+
         print("-----------* Doors info *-------------")
         print(door_info)
         print("-------------------------------------")

@@ -7,6 +7,7 @@ from manage.SerialHub import SerialHub
 import os
 import threading
 import time
+import random
 
 class SetupView(RelativeLayout):
     isSetup = BooleanProperty()
@@ -31,6 +32,32 @@ class SetupView(RelativeLayout):
         self.is_dialog_dismissed = False # reset
         self.dialog.open()
 
+    def test_setup(self):
+        num2pos = dict()
+        number_connected_door = int(self.ids.locker_number_label.text)
+        guessed_pos_list = list()
+        start_number = self.start_number
+        cnt = 0
+        guessed_pos = 0
+        while 1:
+            door_number = str(start_number + cnt)
+            self.ids.technician_label.text = "Please close door number: " + door_number
+            number = random.randint(0, number_connected_door)
+            if guessed_pos == number:
+                continue  # skip
+            if number not in guessed_pos_list and number != 0:  # skip
+                guessed_pos = number  # update
+                guessed_pos_list.append(guessed_pos)
+                num2pos[door_number] = guessed_pos
+                cnt += 1
+                if cnt == int(number_connected_door):
+                    print("fertig")
+                    break
+
+        path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
+        with open(path, mode='w') as f:
+            json.dump(num2pos, f, indent=2)
+
     def _setup(self):
 
         hub = SerialHub()
@@ -40,24 +67,27 @@ class SetupView(RelativeLayout):
             self.ids.technician_label.text = "All doors are open"
             skip_door_pos = list()
             num2pos = dict()
-            number_connected_door = self.ids.locker_number_label.text
+            number_connected_door = int(self.ids.locker_number_label.text)
+            cnt = 0
+            door_info_pos = hub.send_status_command()
 
-            for i in range(int(number_connected_door)):
-                door_number = str(self.start_number + i)
+            while 1:
+                door_number = str(self.start_number + cnt)
                 self.ids.technician_label.text ="Please close door number: " + door_number
 
-                door_info_pos = hub.send_status_command()
-                if door_info_pos == hub.send_status_command(): # no change, door not locked yet then wait
-                    #continue
-                    time.sleep(1)
-                door_info_pos = hub.send_status_command() # retrieve current status
+                if door_info_pos == hub.send_status_command(): # no change, door not locked yet then skip this iteration
+                    continue
+                # door closed
+                door_info_pos = hub.send_status_command() # retrieve current status & update
                 # guess the position of the closed door & map the door number to the guessed position
                 for k in door_info_pos.keys():
                     if door_info_pos[k] == "closed":
                         if k not in skip_door_pos:
                             num2pos[door_number] = int(k)
                             skip_door_pos.append(k)
-
+                            cnt += 1
+                            if cnt == number_connected_door:
+                                break
 
             # save the mapping dict for future use
             path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
@@ -78,6 +108,7 @@ class SetupView(RelativeLayout):
                 self.ids.technician_label.text = "Setup beginning..."
                 x = threading.Thread(target=self._setup(), daemon=True)
                 x.start()
+                #self.test_setup()
             except ValueError:
                 self._open_alert_dialog(text="Start number must be an integer")
 
