@@ -1,7 +1,10 @@
+import sys
 from kivymd.app import MDApp
 from kivymd.uix.screenmanager import MDScreenManager
-from kivy.properties import ObjectProperty
-#from kivy.metrics import dp
+from kivy.properties import ObjectProperty, NumericProperty
+#import cProfile
+from manage.SerialHub import SerialHub
+import serial
 
 class NavigationScreenManager(MDScreenManager):
     screen_stack = []
@@ -12,6 +15,11 @@ class NavigationScreenManager(MDScreenManager):
             self.screen_stack.append(self.current)
             self.transition.direction = "left"
             self.current = screen_name
+        if screen_name == "welcome":
+            # empty the screen stack
+            self.screen_stack.clear()
+            self.current = screen_name
+
 
     def pop(self):
 
@@ -24,6 +32,7 @@ class NavigationScreenManager(MDScreenManager):
 
 class SmartlockApp(MDApp):
     manager = ObjectProperty(None)
+    connected_doors = NumericProperty()
 
     def build(self):
         self.theme_cls.theme_style = 'Dark'
@@ -31,7 +40,31 @@ class SmartlockApp(MDApp):
         self.theme_cls.primary_palette = "Blue"
         self.load_all_kv_files("./views")
         self.manager = NavigationScreenManager()
-        return self.manager #Builder.load_file("smartlock.kv")
+        return self.manager
+
+    def on_start(self):
+        #self.profile = cProfile.Profile()
+        #self.profile.enable()
+        cnt = 0
+        hub = SerialHub()
+
+        try:
+            door_pos_info = hub.send_status_command()
+            for key in door_pos_info.keys():
+                if door_pos_info[key] == "closed":
+                    cnt +=1
+            self.connected_doors = cnt
+        except serial.SerialException as e:
+            print(e)
+            print("Please make sure that the Hub device is connected correctly")
+            #print("Exiting...")
+            #sys.exit(1)
+            self.connected_doors = 8
+
+
+    #def on_stop(self):
+        #self.profile.disable()
+        #self.profile.dump_stats('SmartlockApp.profile')
 
 
 

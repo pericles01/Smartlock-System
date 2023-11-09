@@ -2,11 +2,12 @@
 #: import WelcomeView views.WelcomeView
 #: import LoginAdminView views.LoginAdminView
 #: import GlobalComponents views.GlobalComponents
-#: set backgroundButtonColor "0277BD"
+#: import TechnicianMembershipView views.TechnicianMembershipView
+# #: set backgroundColor "8D6E63"
 
 <NavigationScreenManager>:
     MDScreen:
-        md_bg_color: "8D6E63"
+        md_bg_color: backgroundColor
         name: "welcome"
         WelcomeScreen:
 
@@ -14,6 +15,11 @@
         md_bg_color: [35/255,59/255,54/255,1] #"8D6E63"
         name: "login_admin"
         LoginAdminView:
+
+    MDScreen:
+        md_bg_color: backgroundColor
+        name: "technician_membership"
+        TechnicianMembershipView:
 
 
 

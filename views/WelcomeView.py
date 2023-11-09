@@ -18,9 +18,7 @@ class LoginOptionCard(MDCard):
     icon_name = StringProperty()
     def __init__(self, **kwargs):
         super(LoginOptionCard, self).__init__(**kwargs)
-        self.style = "filled" #"outlined"
-        self.line_color = (0.2, 0.2, 0.2, 0.8)
-        self.shadow_offset = (0, -1)
+        self.shadow_offset = (0, 1)
     def show_func(self, name:str):
         print(f"{name}")
         print("------------")
