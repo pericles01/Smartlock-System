@@ -3,6 +3,7 @@
 #: import LoginAdminView views.LoginAdminView
 #: import GlobalComponents views.GlobalComponents
 #: import TechnicianMembershipView views.TechnicianMembershipView
+#: import AdminMembershipView views.AdminMembershipView
 # #: set backgroundColor "8D6E63"
 
 <NavigationScreenManager>:
@@ -20,6 +21,11 @@
         md_bg_color: backgroundColor
         name: "technician_membership"
         TechnicianMembershipView:
+
+    MDScreen:
+        md_bg_color: backgroundColor
+        name: "admin_membership"
+        AdminMembershipView:
 
 
 

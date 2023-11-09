@@ -1,0 +1,22 @@
+
+
+<AdminMembershipView>:
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTopAppBar:
+            pos_hint: {"top": 1}
+            title: "Technician Membership"
+            anchor_title: "center"
+            type_height: "small"
+            left_action_items: [["menu", lambda x: x]]
+            right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
+
+        FloatLayout:
+            #size_hint: .5, .2
+            MDFillRoundFlatIconButton:
+                text: "Load Users file"
+                icon: "folder"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                on_release: root.file_manager_open()
+
