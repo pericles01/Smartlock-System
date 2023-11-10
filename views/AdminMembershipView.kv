@@ -1,4 +1,114 @@
 
+<AddUserForm>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : [35/255,49/255,48/255,1]
+        padding : dp(20)
+        spacing : dp(10)
+        orientation : "vertical"
+        MDLabel:
+            text : 'Enter first Name'
+            font_style : 'H6'
+            halign : "center"
+            size_hint: .5, .5
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size: self.texture_size
+        MDGridLayout:
+            pos_hint: {"center_x": .5, "center_y": .5}
+            cols: 2
+            spacing: dp(15)
+            MDRelativeLayout:
+                MDTextField :
+                    id: firstname_field
+                    hint_text : "firstname *"
+                    multiline: False
+                    mode: "round"
+                    icon_left : "account"
+                    size_hint_x : .9
+                    font_size : 20
+                    pos_hint : {"center_x":.5, "center_y": .5}
+            MDRelativeLayout:
+                MDTextField :
+                    id: lastname_field
+                    hint_text : "lastname *"
+                    multiline: False
+                    mode: "round"
+                    icon_left : "account"
+                    size_hint_x : .9
+                    font_size : 20
+                    pos_hint : {"center_x":.5, "center_y": .5}
+        MDSeparator:
+
+        MDLabel:
+            text : 'Enter RFID Code'
+            font_style : 'H6'
+            halign : "center"
+            size_hint: .5, .5
+            pos_hint: {"center_x": .5, "center_y": .5, "center_y": .5}
+
+        MDTextField :
+            id: rfid_field
+            hint_text : "RFID Code *"
+            multiline: False
+            mode: "round"
+            icon_left : "numeric"
+            size_hint_x : .6
+            font_size : 20
+            pos_hint : {"center_x":.5, "center_y": .5}
+
+        MDSeparator:
+
+        MDLabel:
+            text : 'Enter User Description'
+            font_style : 'H6'
+            halign : "center"
+            size_hint: .5, .5
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDTextField :
+            id: description_field
+            hint_text : "User Description"
+            icon_left : "account"
+            multiline: False
+            mode: "round"
+            size_hint_x : .8
+            font_size : 20
+            pos_hint : {"center_x":.5, "center_y": .5}
+
+        MDSeparator:
+
+        MDGridLayout:
+            pos_hint: {"center_x": .5, "center_y": .5}
+            cols: 2
+            spacing: dp(15)
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: save_button
+                    text: "Save"
+                    icon: "content-save"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: exit_button
+                    text: "Exit"
+                    icon: "exit-to-app"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDLabel:
+            id: error_label
+            text: "* required fields"
+            halign: "center"
+            size_hint_y : None
+            height : dp(20)
+            theme_text_color: "Error"
+            font_style: "Subtitle2"
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+
+
+
 
 <AdminMembershipView>:
     MDBoxLayout:
@@ -6,17 +116,50 @@
 
         MDTopAppBar:
             pos_hint: {"top": 1}
-            title: "Technician Membership"
+            title: "Admin Membership"
             anchor_title: "center"
             type_height: "small"
             left_action_items: [["menu", lambda x: x]]
             right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
 
-        FloatLayout:
-            #size_hint: .5, .2
-            MDFillRoundFlatIconButton:
-                text: "Load Users file"
-                icon: "folder"
-                pos_hint: {"center_x": .5, "center_y": .5}
-                on_release: root.file_manager_open()
+        MDRelativeLayout:
+            size_hint: .8, .5
+            #padding: dp(25)
+            pos_hint: {"center_x": .5, "center_y": .5}
+            MDCard:
+                size_hint : .6, .5
+                pos_hint : {"center_x":.5,"center_y":.5}
+                elevation : 5
+                md_bg_color : [35/255,49/255,48/255,1]
+                padding : dp(20)
+                spacing : dp(5)
+                orientation : "vertical"
+                MDLabel:
+                    text : 'Add User'
+                    font_style : 'H6'
+                    halign : "center"
+                    size_hint: .5, .5
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+                MDSeparator:
+                    color: "FFFFFF" # white
+                MDGridLayout:
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    cols: 2
+                    MDRelativeLayout:
+                        padding: dp(20)
+                        MDFillRoundFlatIconButton:
+                            text: "Load Users file"
+                            icon: "folder"
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                            on_release: root.file_manager_open()
+
+                    MDRelativeLayout:
+                        padding: dp(20)
+                        MDFillRoundFlatIconButton:
+                            text: "fill the form"
+                            icon: "form-select"
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                            on_release: root.show_userform_dialog()
+
 
