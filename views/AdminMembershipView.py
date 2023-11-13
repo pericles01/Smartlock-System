@@ -1,5 +1,5 @@
 import os
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 import pandas as pd
 from kivy.uix.popup import Popup
 from kivy.uix.relativelayout import RelativeLayout
@@ -25,6 +25,9 @@ class AdminMembershipView(MDFloatLayout):
                             auto_dismiss=False)
         self.userform_content = AddUserForm()
 
+        self.user_info_dialog = Popup(title="User's informations", title_align="center", title_size="20sp",
+                                      size_hint=(0.8, 0.9), auto_dismiss=False)
+        self.user_info_content = UserInfoForm()
         # set later in add user form
         self.firstname = None
         self.lastname = None
@@ -35,9 +38,14 @@ class AdminMembershipView(MDFloatLayout):
 
     def remove_item_callback(self, instance):
         self.ids.md_list.remove_widget(instance)
+        user_info = instance.text.split('|')
+        toast(f"Successfully deleted user {user_info[0]}, {user_info[1]}",
+              background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+              )
+        # ToDo remove it from the database
 
     def edit_item_callback(self, instance):
-        pass
+        self.show_user_info_dialog(instance)
 
     def file_manager_open(self):
         self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
@@ -68,6 +76,7 @@ class AdminMembershipView(MDFloatLayout):
                                     description=f"{user[4] if str(user[4]) != 'nan' else 'No description'}",
                                     remove_item=self.remove_item_callback, edit_item=self.edit_item_callback)
                     )
+            # ToDo Save user_data into database
 
         except Exception:
             toast(f"Failed to load: {os.path.basename(path)}. Please load a file with the preferred format",
@@ -88,23 +97,44 @@ class AdminMembershipView(MDFloatLayout):
         self.userform_content.ids.description_field.text = ""
         self.userform_content.ids.error_label.text = "* required fields"
 
+    def _on_dismiss_user_info_callback(self, instance):
+        pass
+
     def _verify_input_userform_callback(self, instance):
-        if not (self.userform_content.ids.firstname_field.text and self.userform_content.ids.lastname_field.text
-                and self.userform_content.ids.rfid_field.text):
+        if not (self.userform_content.ids.firstname_field.text.strip() and self.userform_content.ids.lastname_field.text.strip()
+                and self.userform_content.ids.rfid_field.text.strip()):
             self.userform_content.ids.error_label.text = "Please fill all the required fields"
         else:
             try:
-                self.firstname = self.userform_content.ids.firstname_field.text
-                self.lastname = self.userform_content.ids.lastname_field.text
-                self.rfid_code = int(self.userform_content.ids.rfid_field.text)
-                self.user_description = self.userform_content.ids.description_field.text
-                toast(f"Successfully added user {self.firstname}, {self.lastname}",
+                firstname = self.userform_content.ids.firstname_field.text.strip()
+                lastname = self.userform_content.ids.lastname_field.text.strip()
+                rfid_code = int(self.userform_content.ids.rfid_field.text.strip())
+                user_description = self.userform_content.ids.description_field.text.strip()
+                toast(f"Successfully added user {firstname}, {lastname}",
                       background=get_color_from_hex(colors["Blue"]["500"]), duration=3
                 )
+                # ToDo Save it into database
                 self.userform_dialog.dismiss()
             except ValueError:
                 self.userform_content.ids.error_label.text = "RFID Code must be an integer"
 
+    def _verify_input_user_info_callback(self, instance):
+        if not (self.user_info_content.ids.firstname_field.text.strip() and self.user_info_content.ids.lastname_field.text.strip()
+                and self.user_info_content.ids.rfid_field.text.strip()):
+            self.user_info_content.ids.error_label.text = "Please fill all the required fields"
+        else:
+            try:
+                firstname = self.user_info_content.ids.firstname_field.text.strip()
+                lastname = self.user_info_content.ids.lastname_field.text.strip()
+                rfid_code = int(self.user_info_content.ids.rfid_field.text.strip())
+                user_description = self.user_info_content.ids.description_field.text.strip()
+                toast(f"Successfully edited user {firstname}, {lastname}",
+                      background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                )
+                # ToDo Save it into database
+                self.user_info_dialog.dismiss()
+            except ValueError:
+                self.user_info_content.ids.error_label.text = "RFID Code must be an integer"
     def show_userform_dialog(self):
         self.userform_content.ids.save_button.bind(on_press=self._verify_input_userform_callback)
         self.userform_content.ids.exit_button.bind(on_press=self.userform_dialog.dismiss)
@@ -113,10 +143,33 @@ class AdminMembershipView(MDFloatLayout):
         self.userform_dialog.bind(on_dismiss=self._on_dismiss_userform_callback)
         self.userform_dialog.open()
 
+    def show_user_info_dialog(self, instance):
+        """
+        :param instance: SwipeToEditItem
+        :return: None
+        This method retrieve the user's infos from instance object and show the in the popup content
+        """
+        user_info = instance.text.split('|')
+        self.user_info_content.ids.firstname_field.text = user_info[0].strip()
+        self.user_info_content.ids.lastname_field.text = user_info[1].strip()
+        self.user_info_content.ids.rfid_field.text = user_info[2].strip()
+        self.user_info_content.ids.description_field.text = instance.description.strip()
+
+        self.user_info_content.ids.save_button.bind(on_press=self._verify_input_user_info_callback)
+        self.user_info_content.ids.exit_button.bind(on_press=self.user_info_dialog.dismiss)
+
+        self.user_info_dialog.content = self.user_info_content
+        self.user_info_dialog.bind(on_dismiss=self._on_dismiss_user_info_callback)
+        self.user_info_dialog.open()
+
 
 class AddUserForm(RelativeLayout):
     def __init__(self, **kwargs):
         super(AddUserForm, self).__init__(**kwargs)
+
+class UserInfoForm(RelativeLayout):
+    def __init__(self, **kwargs):
+        super(UserInfoForm, self).__init__(**kwargs)
 
 class SwipeToEditItem(MDCardSwipe):
     '''Card with `swipe-to-edit` behavior.'''
@@ -125,3 +178,4 @@ class SwipeToEditItem(MDCardSwipe):
     description = StringProperty()
     remove_item = ObjectProperty()
     edit_item = ObjectProperty()
+    edited = BooleanProperty()
