@@ -1,8 +1,41 @@
+#: import GlobalComponents views.GlobalComponents
+
+<SwipeToEditItem>:
+    size_hint_y: None
+    height: content.height
+    swipe_distance: 25
+
+    MDCardSwipeLayerBox:
+        padding: dp(8)
+
+        MDIconButton:
+            icon: "trash-can"
+            pos_hint: {"center_y": .5}
+            on_release: root.remove_item(root)
+
+        MDIconButton:
+            icon: "eye-settings"
+            pos_hint: {"center_y": .5}
+            #on_release: root.edit_item(root)
+
+    MDCardSwipeFrontBox:
+
+        TwoLineListItem:
+            id: content
+            text: root.text
+            secondary_text: root.description
+            _no_ripple_effect: True
+            #divider_color: [1, 1, 1, 1] # white
+            bg_color: CardBackgroundColor
+            radius: [5, 5, 5, 5]
+
+
+
 
 <AddUserForm>:
     MDCard:
         pos_hint : {"center_x":.5,"center_y":.5}
-        md_bg_color : [35/255,49/255,48/255,1]
+        md_bg_color : CardBackgroundColor
         padding : dp(20)
         spacing : dp(10)
         orientation : "vertical"
@@ -107,12 +140,10 @@
             pos_hint: {"center_x": .5, "center_y": .5}
 
 
-
-
-
 <AdminMembershipView>:
     MDBoxLayout:
         orientation: "vertical"
+        padding: 0, 0, 0, dp(10)
 
         MDTopAppBar:
             pos_hint: {"top": 1}
@@ -123,17 +154,16 @@
             right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
 
         MDRelativeLayout:
-            size_hint: .8, .5
-            #padding: dp(25)
+            size_hint: .8, .4
             pos_hint: {"center_x": .5, "center_y": .5}
             MDCard:
-                size_hint : .6, .5
+                size_hint : .7, .8
                 pos_hint : {"center_x":.5,"center_y":.5}
-                elevation : 5
-                md_bg_color : [35/255,49/255,48/255,1]
-                padding : dp(20)
+                elevation : 3
+                md_bg_color : CardBackgroundColor
                 spacing : dp(5)
                 orientation : "vertical"
+                shadow_offset: (0, 1)
                 MDLabel:
                     text : 'Add User'
                     font_style : 'H6'
@@ -161,5 +191,27 @@
                             icon: "form-select"
                             pos_hint: {"center_x": .5, "center_y": .5}
                             on_release: root.show_userform_dialog()
+
+        MDLabel:
+            text : 'Users data'
+            font_style : 'H6'
+            halign : "center"
+            size_hint: .5, None
+            height: dp(40)
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDRelativeLayout:
+            size_hint: .5, .9
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+            #MDLabel:
+            #    text: "No Data"
+            #    halign: "center"
+            #    pos_hint: {"center_x": .5, "center_y": .5}
+            MDScrollView:
+                scroll_timeout : 100
+                MDList:
+                    id: md_list
+                    spacing: dp(5)
 
 

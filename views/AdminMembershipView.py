@@ -1,12 +1,15 @@
 import os
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
+import pandas as pd
 from kivy.uix.popup import Popup
 from kivy.uix.relativelayout import RelativeLayout
 from kivymd.toast import toast
+from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.filemanager import MDFileManager
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.utils import get_color_from_hex
 from kivymd.color_definitions import colors
+import json
 
 
 class AdminMembershipView(MDFloatLayout):
@@ -22,12 +25,19 @@ class AdminMembershipView(MDFloatLayout):
                             auto_dismiss=False)
         self.userform_content = AddUserForm()
 
-        # will be set later
+        # set later in add user form
         self.firstname = None
         self.lastname = None
         self.rfid_code = None
         self.user_description = None
+        # set later in add users with file
+        self.user_data = None
 
+    def remove_item_callback(self, instance):
+        self.ids.md_list.remove_widget(instance)
+
+    def edit_item_callback(self, instance):
+        pass
 
     def file_manager_open(self):
         self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
@@ -37,15 +47,34 @@ class AdminMembershipView(MDFloatLayout):
     def select_path(self, path: str):
         '''
         It will be called when you click on the file name
-        or the catalog selection button.
-
         :param path: path to the selected directory or file;
         '''
+        try:
+            usecols = ["firstname", "lastname", "rfid", "door number", "description"]
+            df = pd.read_csv(path, usecols=usecols)
+            path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
+            with open(path, "r") as f:
+                door_data = json.load(f)
+            # verify that the number of users matches with the number of set up doors
+            assert len(door_data) == len(df.to_numpy())
+            df.sort_values(by=['firstname'], ascending=True, inplace=True)
+            self.user_data = df.to_numpy()
+            toast(f"Successfully loaded: {os.path.basename(path)}",
+                  background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                  )
+            for user in self.user_data:
+                self.ids.md_list.add_widget(
+                    SwipeToEditItem(text=f"{user[0]} | {user[1]} | {user[2]}",
+                                    description=f"{user[4] if str(user[4]) != 'nan' else 'No description'}",
+                                    remove_item=self.remove_item_callback, edit_item=self.edit_item_callback)
+                    )
+
+        except Exception:
+            toast(f"Failed to load: {os.path.basename(path)}. Please load a file with the preferred format",
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                  )
 
         self.exit_manager()
-        toast(f"Successfully loaded: {os.path.basename(path)}",
-              background=get_color_from_hex(colors["Blue"]["500"]), duration=3
-        )
 
     def exit_manager(self, *args):
         self.manager_open = False
@@ -88,3 +117,11 @@ class AdminMembershipView(MDFloatLayout):
 class AddUserForm(RelativeLayout):
     def __init__(self, **kwargs):
         super(AddUserForm, self).__init__(**kwargs)
+
+class SwipeToEditItem(MDCardSwipe):
+    '''Card with `swipe-to-edit` behavior.'''
+
+    text = StringProperty()
+    description = StringProperty()
+    remove_item = ObjectProperty()
+    edit_item = ObjectProperty()
