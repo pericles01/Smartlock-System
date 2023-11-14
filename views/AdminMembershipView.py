@@ -123,18 +123,27 @@ class AdminMembershipView(MDFloatLayout):
                 and self.user_info_content.ids.rfid_field.text.strip()):
             self.user_info_content.ids.error_label.text = "Please fill all the required fields"
         else:
-            try:
-                firstname = self.user_info_content.ids.firstname_field.text.strip()
-                lastname = self.user_info_content.ids.lastname_field.text.strip()
-                rfid_code = int(self.user_info_content.ids.rfid_field.text.strip())
-                user_description = self.user_info_content.ids.description_field.text.strip()
-                toast(f"Successfully edited user {firstname}, {lastname}",
-                      background=get_color_from_hex(colors["Blue"]["500"]), duration=3
-                )
-                # ToDo Save it into database
-                self.user_info_dialog.dismiss()
-            except ValueError:
-                self.user_info_content.ids.error_label.text = "RFID Code must be an integer"
+            start_info = (self.user_info_content.swipe_instance.text.split('|'),
+                          self.user_info_content.swipe_instance.description)
+            if (self.user_info_content.ids.firstname_field.text.strip() != start_info[0][0].strip() or
+                self.user_info_content.ids.lastname_field.text.strip() != start_info[0][1].strip() or
+                self.user_info_content.ids.rfid_field.text.strip() != start_info[0][2].strip() or
+                self.user_info_content.ids.description_field.text.strip() != start_info[1].strip()):
+                try:
+                    firstname = self.user_info_content.ids.firstname_field.text.strip()
+                    lastname = self.user_info_content.ids.lastname_field.text.strip()
+                    rfid_code = int(self.user_info_content.ids.rfid_field.text.strip())
+                    user_description = self.user_info_content.ids.description_field.text.strip()
+                    toast(f"Successfully edited user {firstname}, {lastname}",
+                          background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                    )
+                    # ToDo Save it into database
+                    self.user_info_dialog.dismiss()
+                except ValueError:
+                    self.user_info_content.ids.error_label.text = "RFID Code must be an integer"
+            else:
+                self.user_info_content.ids.error_label.text = "No changes in user's informations"
+
     def show_userform_dialog(self):
         self.userform_content.ids.save_button.bind(on_press=self._verify_input_userform_callback)
         self.userform_content.ids.exit_button.bind(on_press=self.userform_dialog.dismiss)
@@ -154,6 +163,7 @@ class AdminMembershipView(MDFloatLayout):
         self.user_info_content.ids.lastname_field.text = user_info[1].strip()
         self.user_info_content.ids.rfid_field.text = user_info[2].strip()
         self.user_info_content.ids.description_field.text = instance.description.strip()
+        self.user_info_content.swipe_instance = instance
 
         self.user_info_content.ids.save_button.bind(on_press=self._verify_input_user_info_callback)
         self.user_info_content.ids.exit_button.bind(on_press=self.user_info_dialog.dismiss)
@@ -168,8 +178,10 @@ class AddUserForm(RelativeLayout):
         super(AddUserForm, self).__init__(**kwargs)
 
 class UserInfoForm(RelativeLayout):
+    swipe_instance = ObjectProperty()
     def __init__(self, **kwargs):
         super(UserInfoForm, self).__init__(**kwargs)
+
 
 class SwipeToEditItem(MDCardSwipe):
     '''Card with `swipe-to-edit` behavior.'''
