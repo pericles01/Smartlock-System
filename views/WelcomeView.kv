@@ -1,13 +1,19 @@
+#: import GlobalComponents views.GlobalComponents
+
 <LoginOptionCard>:
     padding: dp(5), dp(5), dp(5), dp(15)
     size_hint: .8, .8
     pos_hint: {"center_x": .5, "center_y": .5}
     orientation: "vertical"
+    md_bg_color : CardBackgroundColor
     elevation: 3
     focus_behavior: True
     focus_color: app.theme_cls.primary_light
+    unfocus_color: CardBackgroundColor
+    shadow_offset: (0, 1)
 
     MDIconButton:
+        id: icon_button
         icon: root.icon_name
         icon_size: "60sp"
         pos_hint: {"center_x": .5, "center_y": .5}
@@ -53,20 +59,24 @@
 
             MDFloatLayout:
                 LoginOptionCard:
+                    id: rfid_login
                     icon_name: "account-card"
                     text_option: "Unlock with RFID"
 
             MDFloatLayout:
                 LoginOptionCard:
+                    id: pin_login
                     icon_name: "numeric"
                     text_option: "Unlock with PIN"
 
             MDFloatLayout:
                 LoginOptionCard:
+                    id: qrcode_login
                     icon_name: "qrcode-scan"
                     text_option: "Unlock with QR Code"
 
             MDFloatLayout:
                 LoginOptionCard:
+                    id: face_recon_login
                     icon_name: "face-recognition"
                     text_option: "Unlock with Face Recognition"

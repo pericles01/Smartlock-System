@@ -1,8 +1,6 @@
 import serial
 import argparse
 import json
-import random
-import os
 
 def send_command2Hub(hub_command:str) -> list:
     """
