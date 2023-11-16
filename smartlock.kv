@@ -4,6 +4,7 @@
 #: import GlobalComponents views.GlobalComponents
 #: import TechnicianMembershipView views.TechnicianMembershipView
 #: import AdminMembershipView views.AdminMembershipView
+#: import UserMembershipView views.UserMembershipView
 
 <NavigationScreenManager>:
     MDScreen:
@@ -25,6 +26,11 @@
         md_bg_color: backgroundColor
         name: "admin_membership"
         AdminMembershipView:
+
+    MDScreen:
+        md_bg_color: backgroundColor
+        name: "user_membership"
+        UserMembershipView:
 
 
 

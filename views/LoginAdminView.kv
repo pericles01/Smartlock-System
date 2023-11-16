@@ -1,28 +1,5 @@
 #: import GlobalComponents views.GlobalComponents
 
-<ClickableTextFieldRound@MDRelativeLayout>:
-    size_hint_y: None
-    height: password_field.height
-    MDTextField:
-        id: password_field
-        hint_text : "password"
-        max_text_length: 10
-        multiline: False
-        mode: "round"
-        password : True
-        icon_left: "key-variant"
-        size_hint_x : None
-        width : 220
-        pos_hint : {"center_x":.5}
-        #on_text_validate: root.login(app.manager)
-
-    MDIconButton:
-        icon: "eye-off"
-        pos_hint: {"center_x": .8,"center_y": .5}
-        theme_text_color: "Hint"
-        on_release:
-            self.icon = "eye" if self.icon == "eye-off" else "eye-off"
-            password_field.password = False if password_field.password is True else True
 
 <CardLabel@MDLabel>:
     text : 'LOGIN'
