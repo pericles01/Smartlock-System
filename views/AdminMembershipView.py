@@ -10,6 +10,7 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.utils import get_color_from_hex
 from kivymd.color_definitions import colors
 import json
+from functools import partial
 
 
 class AdminMembershipView(MDFloatLayout):
@@ -28,6 +29,11 @@ class AdminMembershipView(MDFloatLayout):
         self.user_info_dialog = Popup(title="User's informations", title_align="center", title_size="20sp",
                                       size_hint=(0.8, 0.9), auto_dismiss=False)
         self.user_info_content = UserInfoForm()
+
+        self.delete_confirmation_dialog = Popup(title="Delete confirmation", title_align="center", title_size="20sp",
+                                      size_hint=(0.6, 0.4), auto_dismiss=False)
+        self.delete_confirmation_dialog_content = ConfirmationDialogContent()
+
         # set later in add user form
         self.firstname = None
         self.lastname = None
@@ -35,14 +41,6 @@ class AdminMembershipView(MDFloatLayout):
         self.user_description = None
         # set later in add users with file
         self.user_data = None
-
-    def remove_item_callback(self, instance):
-        self.ids.md_list.remove_widget(instance)
-        user_info = instance.text.split('|')
-        toast(f"Successfully deleted user {user_info[0]}, {user_info[1]}",
-              background=get_color_from_hex(colors["Blue"]["500"]), duration=3
-              )
-        # ToDo remove it from the database
 
     def edit_item_callback(self, instance):
         self.show_user_info_dialog(instance)
@@ -72,9 +70,11 @@ class AdminMembershipView(MDFloatLayout):
                   )
             for user in self.user_data:
                 self.ids.md_list.add_widget(
-                    SwipeToEditItem(text=f"{user[0]} | {user[1]} | {user[2]}",
-                                    description=f"{user[4] if str(user[4]) != 'nan' else 'No description'}",
-                                    remove_item=self.remove_item_callback, edit_item=self.edit_item_callback)
+                    SwipeToEditItem(
+                        text=f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
+                        description=f"{user[4] if str(user[4]) != 'nan' else 'No description'}",
+                        remove_item_confirmation=self.show_delete_confirmation_dialog,
+                        edit_item=self.edit_item_callback)
                     )
             # ToDo Save user_data into database
 
@@ -102,13 +102,14 @@ class AdminMembershipView(MDFloatLayout):
 
     def _verify_input_userform_callback(self, instance):
         if not (self.userform_content.ids.firstname_field.text.strip() and self.userform_content.ids.lastname_field.text.strip()
-                and self.userform_content.ids.rfid_field.text.strip()):
+                and self.userform_content.ids.rfid_field.text.strip() and self.userform_content.ids.door_number_field.text.strip()):
             self.userform_content.ids.error_label.text = "Please fill all the required fields"
         else:
             try:
                 firstname = self.userform_content.ids.firstname_field.text.strip()
                 lastname = self.userform_content.ids.lastname_field.text.strip()
                 rfid_code = int(self.userform_content.ids.rfid_field.text.strip())
+                door_number = int(self.userform_content.ids.door_number_field.text.strip())
                 user_description = self.userform_content.ids.description_field.text.strip()
                 toast(f"Successfully added user {firstname}, {lastname}",
                       background=get_color_from_hex(colors["Blue"]["500"]), duration=3
@@ -116,11 +117,11 @@ class AdminMembershipView(MDFloatLayout):
                 # ToDo Save it into database
                 self.userform_dialog.dismiss()
             except ValueError:
-                self.userform_content.ids.error_label.text = "RFID Code must be an integer"
+                self.userform_content.ids.error_label.text = "RFID Code and door number must be an integer"
 
     def _verify_input_user_info_callback(self, instance):
         if not (self.user_info_content.ids.firstname_field.text.strip() and self.user_info_content.ids.lastname_field.text.strip()
-                and self.user_info_content.ids.rfid_field.text.strip()):
+                and self.user_info_content.ids.rfid_field.text.strip() and self.user_info_content.ids.door_number_field.text.strip()):
             self.user_info_content.ids.error_label.text = "Please fill all the required fields"
         else:
             start_info = (self.user_info_content.swipe_instance.text.split('|'),
@@ -128,11 +129,13 @@ class AdminMembershipView(MDFloatLayout):
             if (self.user_info_content.ids.firstname_field.text.strip() != start_info[0][0].strip() or
                 self.user_info_content.ids.lastname_field.text.strip() != start_info[0][1].strip() or
                 self.user_info_content.ids.rfid_field.text.strip() != start_info[0][2].strip() or
+                self.user_info_content.ids.door_number_field.text.strip() != start_info[0][3].strip() or
                 self.user_info_content.ids.description_field.text.strip() != start_info[1].strip()):
                 try:
                     firstname = self.user_info_content.ids.firstname_field.text.strip()
                     lastname = self.user_info_content.ids.lastname_field.text.strip()
                     rfid_code = int(self.user_info_content.ids.rfid_field.text.strip())
+                    door_number = int(self.userform_content.ids.door_number_field.text.strip())
                     user_description = self.user_info_content.ids.description_field.text.strip()
                     toast(f"Successfully edited user {firstname}, {lastname}",
                           background=get_color_from_hex(colors["Blue"]["500"]), duration=3
@@ -140,7 +143,7 @@ class AdminMembershipView(MDFloatLayout):
                     # ToDo Save it into database
                     self.user_info_dialog.dismiss()
                 except ValueError:
-                    self.user_info_content.ids.error_label.text = "RFID Code must be an integer"
+                    self.user_info_content.ids.error_label.text = "RFID Code and door number must be an integer"
             else:
                 self.user_info_content.ids.error_label.text = "No changes in user's informations"
 
@@ -162,6 +165,7 @@ class AdminMembershipView(MDFloatLayout):
         self.user_info_content.ids.firstname_field.text = user_info[0].strip()
         self.user_info_content.ids.lastname_field.text = user_info[1].strip()
         self.user_info_content.ids.rfid_field.text = user_info[2].strip()
+        self.user_info_content.ids.door_number_field.text = user_info[3].strip()
         self.user_info_content.ids.description_field.text = instance.description.strip()
         self.user_info_content.swipe_instance = instance
 
@@ -173,14 +177,38 @@ class AdminMembershipView(MDFloatLayout):
         self.user_info_dialog.open()
 
 
+    def remove_item_callback(self, instance, *args):
+        self.ids.md_list.remove_widget(instance)
+        user_info = instance.text.split('|')
+        toast(f"Successfully deleted user {user_info[0]}, {user_info[1]}",
+              background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+              )
+        self.delete_confirmation_dialog.dismiss()
+        # ToDo remove it from the database
+    def show_delete_confirmation_dialog(self, instance):
+
+        self.delete_confirmation_dialog_content.ids.yes_button.bind(
+            on_press=partial(self.remove_item_callback, instance)
+        )
+        self.delete_confirmation_dialog_content.ids.no_button.bind(
+            on_press=self.delete_confirmation_dialog.dismiss
+        )
+        self.delete_confirmation_dialog.content = self.delete_confirmation_dialog_content
+        self.delete_confirmation_dialog.open()
+
+
 class AddUserForm(RelativeLayout):
     def __init__(self, **kwargs):
         super(AddUserForm, self).__init__(**kwargs)
 
 class UserInfoForm(RelativeLayout):
-    swipe_instance = ObjectProperty()
+    swipe_instance = ObjectProperty() # used to verify modifications in user info form
     def __init__(self, **kwargs):
         super(UserInfoForm, self).__init__(**kwargs)
+
+class ConfirmationDialogContent(RelativeLayout):
+    def __init__(self, **kwargs):
+        super(ConfirmationDialogContent, self).__init__(**kwargs)
 
 
 class SwipeToEditItem(MDCardSwipe):
@@ -188,6 +216,6 @@ class SwipeToEditItem(MDCardSwipe):
 
     text = StringProperty()
     description = StringProperty()
-    remove_item = ObjectProperty()
+    remove_item_confirmation = ObjectProperty()
     edit_item = ObjectProperty()
     edited = BooleanProperty()
