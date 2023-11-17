@@ -30,41 +30,7 @@
             radius: [5, 5, 5, 5]
 
 
-<ConfirmationDialogContent>:
-    MDCard:
-        pos_hint : {"center_x":.5,"center_y":.5}
-        md_bg_color : CardBackgroundColor
-        orientation : "vertical"
-        spacing: dp(10)
-        padding: dp(10)
-        MDLabel:
-            text : 'Do you want to delete this user?'
-            font_style : 'H5'
-            halign : "center"
-            #size_hint_y: .5
-            pos_hint: {"center_x": .5, "center_y": .5}
 
-        MDSeparator:
-
-        MDGridLayout:
-            pos_hint: {"center_x": .5, "center_y": .5}
-            #size_hint_y: .3
-            cols: 2
-            spacing: dp(15)
-
-            MDRelativeLayout:
-                MDFillRoundFlatIconButton:
-                    id: yes_button
-                    text: "Yes"
-                    icon: "check"
-                    pos_hint: {"center_x": .5, "center_y": .5}
-
-            MDRelativeLayout:
-                MDFillRoundFlatIconButton:
-                    id: no_button
-                    text: "No"
-                    icon: "exit-to-app"
-                    pos_hint: {"center_x": .5, "center_y": .5}
 
 <AddUserForm>:
     MDCard:

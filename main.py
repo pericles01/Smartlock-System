@@ -54,7 +54,7 @@ class SmartlockApp(MDApp):
                 if door_pos_info[key] == "closed":
                     cnt +=1
             self.connected_doors = cnt
-        except serial.SerialException as e:
+        except (serial.SerialException, ValueError) as e:
             print(e)
             print("Please make sure that the Hub device is connected correctly")
             #print("Exiting...")

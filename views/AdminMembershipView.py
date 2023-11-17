@@ -12,6 +12,8 @@ from kivymd.color_definitions import colors
 import json
 from functools import partial
 
+from views.GlobalComponents import ConfirmationDialogContent
+
 
 class AdminMembershipView(MDFloatLayout):
     def __init__(self, **kwargs):
@@ -117,7 +119,7 @@ class AdminMembershipView(MDFloatLayout):
                 # ToDo Save it into database
                 self.userform_dialog.dismiss()
             except ValueError:
-                self.userform_content.ids.error_label.text = "RFID Code and door number must be an integer"
+                self.userform_content.ids.error_label.text = "RFID Code and door number must be a numeric number"
 
     def _verify_input_user_info_callback(self, instance):
         if not (self.user_info_content.ids.firstname_field.text.strip() and self.user_info_content.ids.lastname_field.text.strip()
@@ -143,7 +145,7 @@ class AdminMembershipView(MDFloatLayout):
                     # ToDo Save it into database
                     self.user_info_dialog.dismiss()
                 except ValueError:
-                    self.user_info_content.ids.error_label.text = "RFID Code and door number must be an integer"
+                    self.user_info_content.ids.error_label.text = "RFID Code and door number must be a numeric number"
             else:
                 self.user_info_content.ids.error_label.text = "No changes in user's informations"
 
@@ -187,6 +189,7 @@ class AdminMembershipView(MDFloatLayout):
         # ToDo remove it from the database
     def show_delete_confirmation_dialog(self, instance):
 
+        self.delete_confirmation_dialog_content.ids.label.text = "Do you want to delete this user?"
         self.delete_confirmation_dialog_content.ids.yes_button.bind(
             on_press=partial(self.remove_item_callback, instance)
         )
@@ -205,10 +208,6 @@ class UserInfoForm(RelativeLayout):
     swipe_instance = ObjectProperty() # used to verify modifications in user info form
     def __init__(self, **kwargs):
         super(UserInfoForm, self).__init__(**kwargs)
-
-class ConfirmationDialogContent(RelativeLayout):
-    def __init__(self, **kwargs):
-        super(ConfirmationDialogContent, self).__init__(**kwargs)
 
 
 class SwipeToEditItem(MDCardSwipe):
