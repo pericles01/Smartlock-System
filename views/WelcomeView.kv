@@ -1,5 +1,92 @@
 #: import GlobalComponents views.GlobalComponents
 
+<MembershipConfirmationContent>
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        orientation : "vertical"
+        spacing: dp(10)
+        padding: dp(10)
+        MDLabel:
+            id: label
+            text : ""
+            font_style : 'H5'
+            halign : "center"
+            #size_hint_y: .5
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDSeparator:
+
+        MDGridLayout:
+            pos_hint: {"center_x": .5, "center_y": .5}
+            #size_hint_y: .3
+            cols: 2
+            spacing: dp(15)
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: yes_button
+                    text: "Yes"
+                    icon: "check"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    on_press: root.go2membership(app.manager)
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: no_button
+                    text: "No"
+                    icon: "exit-to-app"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+
+<PinDialogContent>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        padding : dp(20)
+        spacing : dp(10)
+        orientation : "vertical"
+        MDLabel:
+            text : 'Please enter your PIN'
+            font_style : 'H6'
+            halign : "center"
+            size_hint: .5, .5
+            pos_hint: {"center_x": .5, "center_y": .5}
+            #size: self.texture_size
+        ClickableTextFieldRound:
+            id: user_pin_login
+
+        MDSeparator:
+
+        MDGridLayout:
+            pos_hint: {"center_x": .5, "center_y": .5}
+            cols: 2
+            spacing: dp(15)
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: login_button
+                    text: "Login"
+                    icon: "account"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: exit_button
+                    text: "Exit"
+                    icon: "exit-to-app"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDLabel:
+            id: error_label
+            font_style : 'Subtitle2'
+            halign : "center"
+            size_hint_y: None
+            height: dp(15)
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_text_color: "Error"
+
+
 <LoginOptionCard>:
     padding: dp(5), dp(5), dp(5), dp(15)
     size_hint: .8, .8
@@ -18,7 +105,7 @@
         icon_size: "60sp"
         pos_hint: {"center_x": .5, "center_y": .5}
         size_hint: 1, .6
-        on_press: root.show_func(root.text_option)
+        on_press: root.press_callback(root)
 
     MDLabel:
         text: root.text_option
@@ -28,7 +115,7 @@
         pos_hint: {"center_x": .5, "center_y": .5}
         bold: True
 
-<WelcomeScreen@FloatLayout>:
+<WelcomeScreen>:
     BoxLayout:
         orientation: "vertical"
         AnchorLayout:
@@ -61,22 +148,26 @@
                 LoginOptionCard:
                     id: rfid_login
                     icon_name: "account-card"
-                    text_option: "Unlock with RFID"
+                    text_option: "Login with RFID"
+                    press_callback: root.show_dialog
 
             MDFloatLayout:
                 LoginOptionCard:
                     id: pin_login
                     icon_name: "numeric"
-                    text_option: "Unlock with PIN"
+                    text_option: "Login with PIN"
+                    press_callback: root.show_dialog
 
             MDFloatLayout:
                 LoginOptionCard:
                     id: qrcode_login
                     icon_name: "qrcode-scan"
-                    text_option: "Unlock with QR Code"
+                    text_option: "Login with QR Code"
+                    press_callback: root.show_dialog
 
             MDFloatLayout:
                 LoginOptionCard:
                     id: face_recon_login
                     icon_name: "face-recognition"
-                    text_option: "Unlock with Face Recognition"
+                    text_option: "Login with Face Recognition"
+                    press_callback: root.show_dialog

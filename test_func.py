@@ -7,7 +7,8 @@ df = pd.read_csv("ressources/user-list.csv", usecols=usecols)
 df.sort_values(by=['firstname'], ascending=True, inplace=True)
 np_data = df.to_numpy()
 for item in np_data:
-    print(f"User: {item[0]} | {item[1]} | {item[2]}")
+    text = f"User: {item[0]} | {item[1]} | {item[2]} | {item[3]}"
+    split = text.split("|")
     isEmpty = str(item[4]) != 'nan'
     print(f"| {item[4] if str(item[4]) != 'nan' else ''}")
     print(" ")

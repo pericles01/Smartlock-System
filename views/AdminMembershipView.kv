@@ -11,7 +11,7 @@
         MDIconButton:
             icon: "trash-can"
             pos_hint: {"center_y": .5}
-            on_release: root.remove_item(root)
+            on_release: root.remove_item_confirmation(root)
 
         MDIconButton:
             icon: "eye-settings"
@@ -36,7 +36,7 @@
     MDCard:
         pos_hint : {"center_x":.5,"center_y":.5}
         md_bg_color : CardBackgroundColor
-        padding : dp(20)
+        padding : dp(15)
         spacing : dp(10)
         orientation : "vertical"
         MDLabel:
@@ -70,6 +70,7 @@
                     size_hint_x : .9
                     font_size : 20
                     pos_hint : {"center_x":.5, "center_y": .5}
+
         MDSeparator:
 
         MDLabel:
@@ -82,6 +83,25 @@
         MDTextField :
             id: rfid_field
             hint_text : "RFID Code *"
+            multiline: False
+            mode: "round"
+            icon_left : "numeric"
+            size_hint_x : .6
+            font_size : 20
+            pos_hint : {"center_x":.5, "center_y": .5}
+
+        MDSeparator:
+
+        MDLabel:
+            text : 'Enter Door Number'
+            font_style : 'H6'
+            halign : "center"
+            size_hint: .5, .5
+            pos_hint: {"center_x": .5, "center_y": .5, "center_y": .5}
+
+        MDTextField :
+            id: door_number_field
+            hint_text : "Door number *"
             multiline: False
             mode: "round"
             icon_left : "numeric"
@@ -199,6 +219,25 @@
         MDSeparator:
 
         MDLabel:
+            text : 'Door number'
+            font_style : 'H6'
+            halign : "center"
+            size_hint: .5, .5
+            pos_hint: {"center_x": .5, "center_y": .5, "center_y": .5}
+
+        MDTextField :
+            id: door_number_field
+            hint_text : "Door number *"
+            multiline: False
+            mode: "round"
+            icon_left : "numeric"
+            size_hint_x : .6
+            font_size : 20
+            pos_hint : {"center_x":.5, "center_y": .5}
+
+        MDSeparator:
+
+        MDLabel:
             text : 'User Description'
             font_style : 'H6'
             halign : "center"
@@ -260,11 +299,16 @@
             left_action_items: [["menu", lambda x: x]]
             right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
 
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+
         MDRelativeLayout:
             size_hint: .8, .4
             pos_hint: {"center_x": .5, "center_y": .5}
+            spacing: dp(5)
             MDCard:
-                size_hint : .7, .8
+                size_hint : .7, .9
                 pos_hint : {"center_x":.5,"center_y":.5}
                 elevation : 3
                 md_bg_color : CardBackgroundColor
@@ -299,22 +343,28 @@
                             pos_hint: {"center_x": .5, "center_y": .5}
                             on_release: root.show_userform_dialog()
 
-        MDLabel:
-            text : 'Users data preview'
-            font_style : 'H6'
-            halign : "center"
-            size_hint: .5, None
-            height: dp(40)
-            pos_hint: {"center_x": .5, "center_y": .5}
+        MDGridLayout:
+            rows: 2
+            #spacing: dp(5)
+            size_hint_y: .2
+            MDLabel:
+                text : 'Users data preview'
+                font_style : 'H6'
+                halign : "center"
+                size_hint: .5, None
+                height: dp(25)
+                pos_hint: {"center_x": .5, "center_y": .5}
+            MDLabel:
+                text : 'Firstname | Lastname | RFID | Door number'
+                font_style : 'Subtitle1'
+                halign : "center"
+                size_hint: .5, None
+                height: dp(25)
+                pos_hint: {"center_x": .5, "center_y": .5}
 
         MDRelativeLayout:
-            size_hint: .5, .9
+            size_hint_x: .5 #, .9
             pos_hint: {"center_x": .5, "center_y": .5}
-
-            #MDLabel:
-            #    text: "No Data"
-            #    halign: "center"
-            #    pos_hint: {"center_x": .5, "center_y": .5}
             MDScrollView:
                 scroll_timeout : 100
                 MDList:

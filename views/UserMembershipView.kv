@@ -1,0 +1,70 @@
+#: import GlobalComponents views.GlobalComponents
+#: import UserHomeView views.UserHomeView
+#:import FadeTransition kivy.uix.screenmanager.FadeTransition
+
+<UserMembershipView>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: 0, 0, 0, dp(10)
+
+        MDTopAppBar:
+            pos_hint: {"top": 1}
+            title: "User Membership" # "Welcome" + root.user.firstname + "!"
+            anchor_title: "center"
+            type_height: "small"
+            left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
+            right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
+
+        MDNavigationLayout:
+            MDScreenManager:
+                id: manager
+                transition:
+                    FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
+
+                MDScreen:
+                    name: "home"
+                    id: user_welcome_screen
+                    UserHomeView:
+
+            MDNavigationDrawer:
+                id: nav_drawer
+                radius: (0, 16, 16, 0)
+
+                MDNavigationDrawerMenu:
+                    spacing: dp(10)
+                    DrawerClickableItem:
+                        icon: "home"
+                        text_right_color: "#4a4939" # white
+                        text: "Home"
+                        on_press:
+                            manager.current="home"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:
+
+                    DrawerClickableItem:
+                        icon: "numeric"
+                        text: "Change PIN"
+                        on_press:
+                        #    manager.current="pin"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:
+
+                    DrawerClickableItem:
+                        icon: "qrcode-scan"
+                        text: "Generate QR-Code"
+                        on_press:
+                        #    manager.current="pin"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:
+
+                    DrawerClickableItem:
+                        icon: "face-recognition"
+                        text: "Update Face recognition"
+                        on_press:
+                        #    manager.current="pin"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:

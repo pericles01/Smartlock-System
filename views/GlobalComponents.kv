@@ -9,5 +9,70 @@
 <VBoxLayout@BoxLayout>:
     orientation: "vertical"
 
+<DrawerClickableItem@MDNavigationDrawerItem>
+    focus_color: app.theme_cls.primary_dark
+    text_color: "E0E0E0" #"#4a4939"
+    #icon_color: "#4a4939"
+    ripple_color: "#c5bdd2"
+    selected_color: "#0c6c4d"
 
-#<BackgroundScreenLayout@MDFloatLayout>:
+<ClickableTextFieldRound@MDRelativeLayout>:
+    size_hint_y: None
+    height: password_field.height
+    MDTextField:
+        id: password_field
+        hint_text : "password"
+        max_text_length: 10
+        multiline: False
+        mode: "round"
+        password : True
+        icon_left: "key-variant"
+        size_hint_x : None
+        width : 220
+        pos_hint : {"center_x":.5}
+        #on_text_validate: root.login(app.manager)
+
+    MDIconButton:
+        icon: "eye-off"
+        pos_hint: {"center_x": .8,"center_y": .5}
+        theme_text_color: "Hint"
+        on_release:
+            self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+            password_field.password = False if password_field.password is True else True
+
+<ConfirmationDialogContent>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        orientation : "vertical"
+        spacing: dp(10)
+        padding: dp(10)
+        MDLabel:
+            id: label
+            text : ""
+            font_style : 'H5'
+            halign : "center"
+            #size_hint_y: .5
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDSeparator:
+
+        MDGridLayout:
+            pos_hint: {"center_x": .5, "center_y": .5}
+            #size_hint_y: .3
+            cols: 2
+            spacing: dp(15)
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: yes_button
+                    text: "Yes"
+                    icon: "check"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: no_button
+                    text: "No"
+                    icon: "exit-to-app"
+                    pos_hint: {"center_x": .5, "center_y": .5}
