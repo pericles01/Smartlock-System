@@ -8,19 +8,21 @@ class Database:
         self.__db_connection = None
         self.__cursor = None
 
-    def db_init(self)->None:
+    def db_init(self, refresh:bool=False)->None:
         """
         create a connection to an existing database or create and configure a nwe one
+        :param refresh: refresh an existing database to get new modifications
         :return: None
         """
         path = os.path.join(os.getcwd(), ".cache/user.db")
         self.__db_connection = sqlite3.connect(path)
         self.__cursor = self.__db_connection.cursor()
-        try:
-            self.__cursor.execute("CREATE TABLE users(firstname, lastname, rfid_code, door_number, description, pin_code, qr_code, face_id)"
-            )
-        except sqlite3.OperationalError as e:
-            print("table users already exists")
+        if not refresh:
+            try:
+                self.__cursor.execute("CREATE TABLE users(firstname, lastname, rfid_code, door_number, description, pin_code, qr_code, face_id)"
+                )
+            except sqlite3.OperationalError as e:
+                print("table users already exists")
 
     def add_users(self, users_list: list) -> bool:
         """

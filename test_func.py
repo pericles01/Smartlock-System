@@ -5,7 +5,7 @@ from manage.Database import Database
 
 if __name__ == '__main__':
     db = Database()
-    db.db_init()
+    db.db_init(refresh=True)
     usecols = ["firstname", "lastname", "rfid", "door number", "description"]
     df = pd.read_csv("ressources/user-list.csv", usecols=usecols)
     df.sort_values(by=['firstname'], ascending=True, inplace=True)
