@@ -43,8 +43,26 @@
                     MDNavigationDrawerDivider:
 
                     DrawerClickableItem:
-                        icon: "update"
+                        icon: "numeric"
                         text: "Change PIN"
+                        on_press:
+                        #    manager.current="pin"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:
+
+                    DrawerClickableItem:
+                        icon: "qrcode-scan"
+                        text: "Generate QR-Code"
+                        on_press:
+                        #    manager.current="pin"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:
+
+                    DrawerClickableItem:
+                        icon: "face-recognition"
+                        text: "Update Face recognition"
                         on_press:
                         #    manager.current="pin"
                             nav_drawer.set_state("close")
