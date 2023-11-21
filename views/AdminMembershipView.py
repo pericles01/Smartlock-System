@@ -11,7 +11,7 @@ from kivy.utils import get_color_from_hex
 from kivymd.color_definitions import colors
 import json
 from functools import partial
-
+from manage.Database import Database
 from views.GlobalComponents import ConfirmationDialogContent
 
 
@@ -43,6 +43,8 @@ class AdminMembershipView(MDFloatLayout):
         self.user_description = None
         # set later in add users with file
         self.user_data = None
+        self._db = Database()
+        self._db.db_init()
 
     def edit_item_callback(self, instance):
         self.show_user_info_dialog(instance)
@@ -66,26 +68,36 @@ class AdminMembershipView(MDFloatLayout):
             # verify that the number of users matches with the number of set up doors
             assert len(door_data) == len(df.to_numpy())
             df.sort_values(by=['firstname'], ascending=True, inplace=True)
-            self.user_data = df.to_numpy()
+            self.user_data = df.to_numpy().tolist()
             toast(f"Successfully loaded: {os.path.basename(path)}",
                   background=get_color_from_hex(colors["Blue"]["500"]), duration=3
                   )
             for user in self.user_data:
-                self.ids.md_list.add_widget(
-                    SwipeToEditItem(
-                        text=f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
-                        description=f"{user[4] if str(user[4]) != 'nan' else 'No description'}",
-                        remove_item_confirmation=self.show_delete_confirmation_dialog,
-                        edit_item=self.edit_item_callback)
-                    )
-            # ToDo Save user_data into database
+                user[4] = user[4] if str(user[4]) != 'nan' else 'No Description'
 
-        except Exception:
+        except ValueError:
             toast(f"Failed to load: {os.path.basename(path)}. Please load a file with the preferred format",
                   background=get_color_from_hex(colors["Red"]["500"]), duration=5
                   )
 
-        self.exit_manager()
+        if self._db.add_users(self.user_data):
+            self.user_data = self._db.show_users_table()
+            for user in self.user_data:
+                self.ids.md_list.add_widget(
+                    SwipeToEditItem(
+                        text=f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
+                        description=f"{user[4]}",
+                        remove_item_confirmation=self.show_delete_confirmation_dialog,
+                        edit_item=self.edit_item_callback)
+                    )
+            self.exit_manager()
+            print(" ")
+            print("--------------")
+            print("Add User test")
+            print("--------------")
+            print(f"Table content length: {len(self.user_data)}")
+            print("Content:")
+            print(f"{self.user_data}")
 
     def exit_manager(self, *args):
         self.manager_open = False
@@ -112,12 +124,22 @@ class AdminMembershipView(MDFloatLayout):
                 lastname = self.userform_content.ids.lastname_field.text.strip()
                 rfid_code = int(self.userform_content.ids.rfid_field.text.strip())
                 door_number = int(self.userform_content.ids.door_number_field.text.strip())
-                user_description = self.userform_content.ids.description_field.text.strip()
+                user_description = self.userform_content.ids.description_field.text.strip() if self.userform_content.ids.description_field.text.strip() != "" else "No Description"
                 toast(f"Successfully added user {firstname}, {lastname}",
                       background=get_color_from_hex(colors["Blue"]["500"]), duration=3
                 )
-                # ToDo Save it into database
-                self.userform_dialog.dismiss()
+                self._db.db_init(refresh=True)
+                if self._db.add_users([(firstname, lastname, rfid_code, door_number, user_description)]):
+                    content = self._db.show_users_table()
+                    print(" ")
+                    print("--------------")
+                    print("Add User test")
+                    print("--------------")
+                    print(f"Table content length: {len(content)}")
+                    print("Content:")
+                    print(f"{content}")
+                    # ToDO Update Swipe list items
+                    self.userform_dialog.dismiss()
             except ValueError:
                 self.userform_content.ids.error_label.text = "RFID Code and door number must be a numeric number"
 
@@ -128,6 +150,7 @@ class AdminMembershipView(MDFloatLayout):
         else:
             start_info = (self.user_info_content.swipe_instance.text.split('|'),
                           self.user_info_content.swipe_instance.description)
+            # if there are modifications
             if (self.user_info_content.ids.firstname_field.text.strip() != start_info[0][0].strip() or
                 self.user_info_content.ids.lastname_field.text.strip() != start_info[0][1].strip() or
                 self.user_info_content.ids.rfid_field.text.strip() != start_info[0][2].strip() or
@@ -137,13 +160,29 @@ class AdminMembershipView(MDFloatLayout):
                     firstname = self.user_info_content.ids.firstname_field.text.strip()
                     lastname = self.user_info_content.ids.lastname_field.text.strip()
                     rfid_code = int(self.user_info_content.ids.rfid_field.text.strip())
-                    door_number = int(self.userform_content.ids.door_number_field.text.strip())
+                    door_number = int(self.user_info_content.ids.door_number_field.text.strip())
                     user_description = self.user_info_content.ids.description_field.text.strip()
                     toast(f"Successfully edited user {firstname}, {lastname}",
                           background=get_color_from_hex(colors["Blue"]["500"]), duration=3
                     )
-                    # ToDo Save it into database
-                    self.user_info_dialog.dismiss()
+
+                    old_user_infos = [start_info[0][0].strip(), start_info[0][1].strip(), int(start_info[0][2].strip())]
+                    new_user_info = [firstname, lastname, rfid_code, door_number, user_description]
+                    self._db.db_init(refresh=True)
+                    if self._db.update_user_basic_infos(old_user_infos, new_user_info):
+                        content = self._db.show_users_table()
+                        print(" ")
+                        print("--------------")
+                        print("Update User test")
+                        print("--------------")
+                        print(f"Old User Info: {old_user_infos}")
+                        print(f"New User Info: {new_user_info}")
+                        print(f"Table content length: {len(content)}")
+                        print("Content:")
+                        print(f"{content}")
+                        # ToDo Update Swipe View
+                        self.user_info_dialog.dismiss()
+
                 except ValueError:
                     self.user_info_content.ids.error_label.text = "RFID Code and door number must be a numeric number"
             else:
@@ -181,12 +220,25 @@ class AdminMembershipView(MDFloatLayout):
 
     def remove_item_callback(self, instance, *args):
         self.ids.md_list.remove_widget(instance)
-        user_info = instance.text.split('|')
-        toast(f"Successfully deleted user {user_info[0]}, {user_info[1]}",
+        user_info = (instance.text.split('|'), instance.description)
+        toast(f"Successfully deleted user {user_info[0][0]}, {user_info[0][1]}",
               background=get_color_from_hex(colors["Blue"]["500"]), duration=3
               )
-        self.delete_confirmation_dialog.dismiss()
-        # ToDo remove it from the database
+        user2delete = (user_info[0][0].strip(), user_info[0][1].strip(), int(user_info[0][2].strip()))
+        self._db.db_init(refresh=True)
+        if self._db.delete_user(user2delete):
+            content = self._db.show_users_table()
+            print(" ")
+            print("--------------")
+            print("Delete User test")
+            print("--------------")
+            print(f"User to delete: {user2delete}")
+            print(f"Table content length: {len(content)}")
+            print("Content:")
+            print(f"{content}")
+            self.delete_confirmation_dialog.dismiss()
+
+
     def show_delete_confirmation_dialog(self, instance):
 
         self.delete_confirmation_dialog_content.ids.label.text = "Do you want to delete this user?"

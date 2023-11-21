@@ -21,8 +21,9 @@ class Database:
             try:
                 self.__cursor.execute("CREATE TABLE users(firstname, lastname, rfid_code, door_number, description, pin_code, qr_code, face_id)"
                 )
+                print("Table created")
             except sqlite3.OperationalError as e:
-                print("table users already exists")
+                print(e)
 
     def add_users(self, users_list: list) -> bool:
         """
@@ -48,13 +49,14 @@ class Database:
                         self.__cursor.execute(f"INSERT INTO users (firstname, lastname, rfid_code, door_number, description) VALUES (?, ?, ?, ?, ?)" , user)
             else:
                 self.__cursor.executemany(
-                    "INSERT INTO users (firstname, lastname, rfid_code, door_number, description) VALUES (?, ?, ?, ?, ?, ?)", users_list
+                    "INSERT INTO users (firstname, lastname, rfid_code, door_number, description) VALUES (?, ?, ?, ?, ?)", users_list
                 )
 
             self.__db_connection.commit()
             return True
 
         except sqlite3.OperationalError as e:
+            print(e)
             return False
 
     def show_users_table(self, full:bool=False)->list:
@@ -80,14 +82,18 @@ class Database:
         :param new_infos: list of length 5 with the new infos to update [firstname, lastname, rfid_code, door_number, description]
         :return: bool: if the update was successful or not
         """
-        assert len(user_info) == 3 and len(new_infos)==5, "the first param must have a length of 3 and the second 5. Please read the method docu"
-        new_infos.extend(user_info)
-        end_list = list()
-        end_list.extend(new_infos)
-        command = "UPDATE users SET firstname=?, lastname=?, rfid_code=?, door_number=?, description=? WHERE firstname=? AND lastname=? AND rfid_code=?"
-        self.__cursor.execute(command, end_list)
-        self.__db_connection.commit()
-        return True
+        try:
+            assert len(user_info) == 3 and len(new_infos)==5, "the first param must have a length of 3 and the second 5. Please read the method docu"
+            new_infos.extend(user_info)
+            end_list = list()
+            end_list.extend(new_infos)
+            command = "UPDATE users SET firstname=?, lastname=?, rfid_code=?, door_number=?, description=? WHERE firstname=? AND lastname=? AND rfid_code=?"
+            self.__cursor.execute(command, end_list)
+            self.__db_connection.commit()
+            return True
+        except (AssertionError, sqlite3.OperationalError) as e:
+            print(e)
+            return False
 
     def delete_user(self, user_info)->bool:
         """
@@ -96,12 +102,15 @@ class Database:
         :return: bool: if the removing was successful or not
         """
 
-        assert len(user_info) == 3, "the user_info list must have a length of 3. Please read the method docu"
-        command = "DELETE FROM users WHERE firstname=? AND lastname=? AND rfid_code=?"
-        self.__cursor.execute(command, user_info)
-        self.__db_connection.commit()
-
-        return True
+        try:
+            assert len(user_info) == 3, "the user_info list must have a length of 3. Please read the method docu"
+            command = "DELETE FROM users WHERE firstname=? AND lastname=? AND rfid_code=?"
+            self.__cursor.execute(command, user_info)
+            self.__db_connection.commit()
+            return True
+        except (AssertionError, sqlite3.OperationalError) as e:
+            print(e)
+            return False
 
 
 
