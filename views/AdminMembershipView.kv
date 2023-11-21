@@ -27,7 +27,7 @@
             _no_ripple_effect: True
             #divider_color: [1, 1, 1, 1] # white
             bg_color: CardBackgroundColor
-            radius: [5, 5, 5, 5]
+            radius: [16, 16, 16, 16]
 
 
 
@@ -365,10 +365,16 @@
         MDRelativeLayout:
             size_hint_x: .5 #, .9
             pos_hint: {"center_x": .5, "center_y": .5}
-            MDScrollView:
-                scroll_timeout : 100
-                MDList:
-                    id: md_list
-                    spacing: dp(5)
+            MDRecycleView:
+                id: rv
+                viewclass: 'SwipeToEditItem'
+                RecycleBoxLayout:
+                    default_size: None, dp(60)
+                    default_size_hint: 1, None
+                    size_hint_y: None
+                    height: self.minimum_height #+ dp(20)
+                    orientation: 'vertical'
+                    spacing: dp(10)
+                    padding: dp(10)
 
 

@@ -82,14 +82,17 @@ class AdminMembershipView(MDFloatLayout):
 
         if self._db.add_users(self.user_data):
             self.user_data = self._db.show_users_table()
+            rv_data = list()
             for user in self.user_data:
-                self.ids.md_list.add_widget(
-                    SwipeToEditItem(
-                        text=f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
-                        description=f"{user[4]}",
-                        remove_item_confirmation=self.show_delete_confirmation_dialog,
-                        edit_item=self.edit_item_callback)
-                    )
+                rv_data.append(
+                    {
+                        "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
+                        "description": f"{user[4]}",
+                        "remove_item_confirmation": self.show_delete_confirmation_dialog,
+                        "edit_item": self.edit_item_callback
+                    }
+                )
+            self.ids.rv.data = rv_data
             self.exit_manager()
             print(" ")
             print("--------------")
@@ -130,15 +133,25 @@ class AdminMembershipView(MDFloatLayout):
                 )
                 self._db.db_init(refresh=True)
                 if self._db.add_users([(firstname, lastname, rfid_code, door_number, user_description)]):
-                    content = self._db.show_users_table()
+                    self.user_data = self._db.show_users_table()
+                    rv_data = list()
+                    for user in self.user_data:
+                        rv_data.append(
+                            {
+                                "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
+                                "description": f"{user[4]}",
+                                "remove_item_confirmation": self.show_delete_confirmation_dialog,
+                                "edit_item": self.edit_item_callback
+                            }
+                        )
+                    self.ids.rv.data = rv_data
                     print(" ")
                     print("--------------")
                     print("Add User test")
                     print("--------------")
-                    print(f"Table content length: {len(content)}")
+                    print(f"Table content length: {len(self.user_data)}")
                     print("Content:")
-                    print(f"{content}")
-                    # ToDO Update Swipe list items
+                    print(f"{self.user_data}")
                     self.userform_dialog.dismiss()
             except ValueError:
                 self.userform_content.ids.error_label.text = "RFID Code and door number must be a numeric number"
@@ -170,16 +183,27 @@ class AdminMembershipView(MDFloatLayout):
                     new_user_info = [firstname, lastname, rfid_code, door_number, user_description]
                     self._db.db_init(refresh=True)
                     if self._db.update_user_basic_infos(old_user_infos, new_user_info):
-                        content = self._db.show_users_table()
+                        self.user_data = self._db.show_users_table()
+                        rv_data = list()
+                        for user in self.user_data:
+                            rv_data.append(
+                                {
+                                    "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
+                                    "description": f"{user[4]}",
+                                    "remove_item_confirmation": self.show_delete_confirmation_dialog,
+                                    "edit_item": self.edit_item_callback
+                                }
+                            )
+                        self.ids.rv.data = rv_data
                         print(" ")
                         print("--------------")
                         print("Update User test")
                         print("--------------")
                         print(f"Old User Info: {old_user_infos}")
                         print(f"New User Info: {new_user_info}")
-                        print(f"Table content length: {len(content)}")
+                        print(f"Table content length: {len(self.user_data)}")
                         print("Content:")
-                        print(f"{content}")
+                        print(f"{self.user_data}")
                         # ToDo Update Swipe View
                         self.user_info_dialog.dismiss()
 
@@ -219,7 +243,7 @@ class AdminMembershipView(MDFloatLayout):
 
 
     def remove_item_callback(self, instance, *args):
-        self.ids.md_list.remove_widget(instance)
+        #self.ids.md_list.remove_widget(instance)
         user_info = (instance.text.split('|'), instance.description)
         toast(f"Successfully deleted user {user_info[0][0]}, {user_info[0][1]}",
               background=get_color_from_hex(colors["Blue"]["500"]), duration=3
@@ -227,15 +251,27 @@ class AdminMembershipView(MDFloatLayout):
         user2delete = (user_info[0][0].strip(), user_info[0][1].strip(), int(user_info[0][2].strip()))
         self._db.db_init(refresh=True)
         if self._db.delete_user(user2delete):
-            content = self._db.show_users_table()
+            # auto update the view
+            self.user_data = self._db.show_users_table()
+            rv_data = list()
+            for user in self.user_data:
+                rv_data.append(
+                    {
+                        "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
+                        "description": f"{user[4]}",
+                        "remove_item_confirmation": self.show_delete_confirmation_dialog,
+                        "edit_item": self.edit_item_callback
+                    }
+                )
+            self.ids.rv.data = rv_data
             print(" ")
             print("--------------")
             print("Delete User test")
             print("--------------")
             print(f"User to delete: {user2delete}")
-            print(f"Table content length: {len(content)}")
+            print(f"Table content length: {len(self.user_data)}")
             print("Content:")
-            print(f"{content}")
+            print(f"{self.user_data}")
             self.delete_confirmation_dialog.dismiss()
 
 
