@@ -112,6 +112,30 @@ class Database:
             print(e)
             return False
 
+    def get_user_by_pin(self, pin:int):
+        """
+        Get a use from the data base by the input pin
+        :param pin: input pin
+        :return: list a user infos if found or None
+        """
+
+        command = "SELECT firstname, lastname, door_number FROM users WHERE pin_code=?"
+        res = self.__cursor.execute(command, pin)
+        return res.fetchall()
+
+    def get_user_by_rfid(self, rfid:int)-> tuple|None:
+        """
+        Get a use from the data base by the input pin
+        :param rfid: input pin
+        :return: tuple of user infos if found or None
+        """
+        command = f"SELECT firstname, lastname, door_number FROM users WHERE rfid_code={rfid}"
+        res = self.__cursor.execute(command).fetchall()
+        if len(res)>0:
+            return res[0]
+        else:
+            return None
+
 
 
 

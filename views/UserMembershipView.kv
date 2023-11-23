@@ -8,8 +8,8 @@
         padding: 0, 0, 0, dp(10)
 
         MDTopAppBar:
+            id: topbar
             pos_hint: {"top": 1}
-            title: "User Membership" # "Welcome" + root.user.firstname + "!"
             anchor_title: "center"
             type_height: "small"
             left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
@@ -22,9 +22,18 @@
                     FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
 
                 MDScreen:
+                    name: "pin"
+                    MDLabel:
+                        text: "Update PIN"
+                        bold: True
+                        font_style : 'H4'
+                        halign : "center"
+                        size_hint: .5, .6
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+                UserHomeView:
                     name: "home"
                     id: user_welcome_screen
-                    UserHomeView:
 
             MDNavigationDrawer:
                 id: nav_drawer
@@ -46,7 +55,7 @@
                         icon: "numeric"
                         text: "Change PIN"
                         on_press:
-                        #    manager.current="pin"
+                            manager.current="pin"
                             nav_drawer.set_state("close")
 
                     MDNavigationDrawerDivider:

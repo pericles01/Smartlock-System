@@ -6,14 +6,14 @@ from manage.Database import Database
 if __name__ == '__main__':
     db = Database()
     db.db_init(refresh=True)
-    usecols = ["firstname", "lastname", "rfid", "door number", "description"]
-    df = pd.read_csv("ressources/user-list.csv", usecols=usecols)
-    df.sort_values(by=['firstname'], ascending=True, inplace=True)
-    users_data = df.to_numpy()
-    for item in users_data:
-        #text = f"User: {item[0]} | {item[1]} | {item[2]} | {item[3]}"
-        #split = text.split("|")
-        item[4] = item[4] if str(item[4]) != 'nan' else 'No Description'
+    # usecols = ["firstname", "lastname", "rfid", "door number", "description"]
+    # df = pd.read_csv("ressources/user-list.csv", usecols=usecols)
+    # df.sort_values(by=['firstname'], ascending=True, inplace=True)
+    # users_data = df.to_numpy()
+    # for item in users_data:
+    #     #text = f"User: {item[0]} | {item[1]} | {item[2]} | {item[3]}"
+    #     #split = text.split("|")
+    #     item[4] = item[4] if str(item[4]) != 'nan' else 'No Description'
 
     # add users coming from a .csv file. Existing datas must be avoided
     # if not db.add_users(users_data.tolist()):
@@ -30,13 +30,17 @@ if __name__ == '__main__':
     # db.update_user_basic_infos(current_user_data, new_user_data)
 
     # Delete a user
-    user2delete = ('John', 'Wick', 9150)
-    db.delete_user(user2delete)
+    # user2delete = ('John', 'Wick', 9150)
+    # db.delete_user(user2delete)
 
     content = db.show_users_table()
     print(f"Table content length: {len(content)}")
     print("Content:")
     print(f"{content}")
+
+    rfid = 7895
+    user = db.get_user_by_rfid(rfid)
+    print(f"User: {user}")
 
 
 # path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")

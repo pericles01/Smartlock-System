@@ -19,6 +19,7 @@ class NavigationScreenManager(MDScreenManager):
             # empty the screen stack
             self.screen_stack.clear()
             self.current = screen_name
+            #MDApp.get_running_app().user = None # reset or logout the user
 
 
     def pop(self):
@@ -33,6 +34,7 @@ class NavigationScreenManager(MDScreenManager):
 class SmartlockApp(MDApp):
     manager = ObjectProperty(None)
     connected_doors = NumericProperty()
+    found_user = ObjectProperty()
 
     def build(self):
         self.theme_cls.theme_style = 'Dark'
