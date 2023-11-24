@@ -50,7 +50,6 @@ class UserHomeView(MDScreen):
                   )
     #def on_motion(self, etype, me):
     def on_pre_enter(self, *args):
-        print("enter user home")
         self.__hub = SerialHub()
         #self.found_user = MDApp.get_running_app().found_user already binded in UserMembershipView
         if self.found_user:
@@ -69,8 +68,6 @@ class UserHomeView(MDScreen):
 
             except (serial.SerialException, ValueError):
                 self.ids.user_door_status.text = "closed"
-
-        #self.ids.user_door_status.md_bg_color = "F44336" if self.status == "open" else "9CCC65" # red -> open or green -> closed
 
     def on_leave(self, *args):
         self.door_pos = int()

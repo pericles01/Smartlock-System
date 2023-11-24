@@ -27,7 +27,7 @@ class Database:
 
     def add_users(self, users_list: list) -> bool:
         """
-        Method used to directly insert users' data coming from a .csv file or a form into the database users table
+        Method used in AdminMembershipView to directly insert users' data coming from a .csv file or a form into the database users table
         :param users_list: users list in the form [[user1_firstname, user1_lastname, user1_rfid_code, user1_door_number, user1_description],
         ...]
         :return: bool: if the insertion was successful or not
@@ -77,7 +77,7 @@ class Database:
 
     def update_user_basic_infos(self, user_info:list, new_infos:list):
         """
-        Method used to update user information such as firstname, lastname, rfid, door_number, description
+        Method used in AdminMembershipView to update user information such as firstname, lastname, rfid, door_number, description
         :param user_info: list of length 3 with actual user info [firstname, lastname, rfid]
         :param new_infos: list of length 5 with the new infos to update [firstname, lastname, rfid_code, door_number, description]
         :return: bool: if the update was successful or not
@@ -123,7 +123,7 @@ class Database:
         res = self.__cursor.execute(command, pin)
         return res.fetchall()
 
-    def get_user_by_rfid(self, rfid:int)-> tuple|None:
+    def get_user_by_rfid(self, rfid:int) -> tuple|None:
         """
         Get a use from the data base by the input pin
         :param rfid: input pin
@@ -135,6 +135,28 @@ class Database:
             return res[0]
         else:
             return None
+
+    def update_user_pin(self, user_info, new_user_pin:int) -> bool:
+        """
+        Method used in UserMembership to update the user's PIN
+        :param user_info: tuple of user's info in order to find him in the database
+        :param new_user_pin: new PIN
+        :return: bool if the updated processed successfully or not
+        """
+        command = f"UPDATE users SET pin_code=? WHERE firstname=? AND lastname=? AND door_number=?"
+        try:
+            assert len(user_info) == 3 and isinstance(new_user_pin, int), "New user PIN must be am integer and user_info must have a length of 3"
+            end_list = list()
+            end_list.append(new_user_pin)
+            end_list.extend(user_info)
+            self.__cursor.execute(command, end_list)
+            self.__db_connection.commit()
+            return True
+
+        except (AssertionError, sqlite3.OperationalError) as e:
+            print(e)
+            return False
+
 
 
 

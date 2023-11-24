@@ -2,6 +2,89 @@
 #: import UserHomeView views.UserHomeView
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
+<UpdateUserPinView>:
+    MDFloatLayout:
+        size_hint: .8, .9
+        pos_hint: {"center_x": .5, "center_y": .5}
+        MDCard:
+            size_hint_x: .7
+            spacing: dp(10)
+            pos_hint: {"center_x": .5, "center_y": .5}
+            orientation: "vertical"
+            elevation: 4
+            shadow_offset: (0, 1)
+            md_bg_color : CardBackgroundColor
+
+            MDLabel:
+                text : 'Update PIN'
+                font_style : 'H5'
+                halign : "center"
+                size_hint_x: .7
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDSeparator:
+
+            MDRelativeLayout:
+                size_hint_x: .6
+                pos_hint: {"center_x": .5, "center_y": .5}
+                MDGridLayout:
+                    rows: 2
+                    spacing: dp(10)
+                    MDLabel:
+                        text : 'Set new PIN'
+                        font_style : 'H6'
+                        halign : "center"
+                        size_hint_x: .7
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+                    ClickableTextFieldRound:
+                        id: new_pin
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDSeparator:
+
+            MDRelativeLayout:
+                size_hint_x: .6
+                pos_hint: {"center_x": .5, "center_y": .5}
+                MDBoxLayout:
+                    orientation: "vertical"
+                    spacing: dp(10)
+                    MDLabel:
+                        text : 'Confirm new PIN'
+                        font_style : 'H6'
+                        halign : "center"
+                        size_hint_x: .7
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+                    ClickableTextFieldRound:
+                        id: confirm_pin
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDSeparator:
+
+            MDRelativeLayout:
+                size_hint_x: .6
+                pos_hint: {"center_x": .5, "center_y": .5}
+                MDBoxLayout:
+                    orientation: "vertical"
+                    spacing: dp(10)
+
+                    MDFillRoundFlatIconButton:
+                        id: update_button
+                        text: "Update"
+                        icon: "content-save-check"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        on_press: root.update_pin()
+
+                    MDLabel:
+                        id: error_label
+                        text : '* required fields, PIN must have 6 digits'
+                        font_style : 'Subtitle2'
+                        theme_text_color: "Error"
+                        halign : "center"
+                        size_hint_x: .8
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
 <UserMembershipView>:
     MDBoxLayout:
         orientation: "vertical"
@@ -21,15 +104,9 @@
                 transition:
                     FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
 
-                MDScreen:
+                UpdateUserPinView:
                     name: "pin"
-                    MDLabel:
-                        text: "Update PIN"
-                        bold: True
-                        font_style : 'H4'
-                        halign : "center"
-                        size_hint: .5, .6
-                        pos_hint: {"center_x": .5, "center_y": .5}
+                    id: update_pin_screen
 
                 UserHomeView:
                     name: "home"
