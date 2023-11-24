@@ -19,7 +19,6 @@ class NavigationScreenManager(MDScreenManager):
             # empty the screen stack
             self.screen_stack.clear()
             self.current = screen_name
-            #MDApp.get_running_app().user = None # reset or logout the user
 
 
     def pop(self):

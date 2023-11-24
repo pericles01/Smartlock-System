@@ -2,6 +2,46 @@
 #: import UserHomeView views.UserHomeView
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
+
+<GenerateQRCodeView>:
+    MDFloatLayout:
+        size_hint: .8, .9
+        pos_hint: {"center_x": .5, "center_y": .5}
+        MDCard:
+            size_hint_x: .7
+            spacing: dp(10)
+            padding: dp(10)
+            pos_hint: {"center_x": .5, "center_y": .5}
+            orientation: "vertical"
+            elevation: 4
+            shadow_offset: (0, 1)
+            md_bg_color : CardBackgroundColor
+
+            MDLabel:
+                text : 'Current QR-Code'
+                font_style : 'H5'
+                halign : "center"
+                size_hint: .7, .2
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDSeparator:
+
+            FitImage:
+                id: image
+                #source:
+                size_hint_x: .8
+                pos_hint: {"center_x": .5, "center_y": .5}
+                radius: 36, 36, 36, 36
+
+            MDFillRoundFlatIconButton:
+                id: update_button
+                text: "Generate & save new QR-Code"
+                icon: "content-save-check"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                on_press: root.generate_qr_code()
+
+
+
 <UpdateUserPinView>:
     MDFloatLayout:
         size_hint: .8, .9
@@ -15,12 +55,27 @@
             shadow_offset: (0, 1)
             md_bg_color : CardBackgroundColor
 
-            MDLabel:
-                text : 'Update PIN'
-                font_style : 'H5'
-                halign : "center"
-                size_hint_x: .7
+            MDRelativeLayout:
+                size_hint_x: .6
                 pos_hint: {"center_x": .5, "center_y": .5}
+                MDGridLayout:
+                    rows: 2
+                    spacing: dp(10)
+                    MDLabel:
+                        text : 'Current PIN'
+                        font_style : 'H6'
+                        halign : "center"
+                        size_hint_x: .7
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+                    MDLabel:
+                        id: user_pin_field
+                        md_bg_color: "8BC34A" # light green
+                        font_style : 'H5'
+                        #bold: True
+                        halign : "center"
+                        size_hint_x: .5
+                        pos_hint: {"center_x": .5, "center_y": .5}
 
             MDSeparator:
 
@@ -71,7 +126,7 @@
 
                     MDFillRoundFlatIconButton:
                         id: update_button
-                        text: "Update"
+                        text: "Update & save"
                         icon: "content-save-check"
                         pos_hint: {"center_x": .5, "center_y": .5}
                         on_press: root.update_pin()
@@ -112,6 +167,10 @@
                     name: "home"
                     id: user_welcome_screen
 
+                GenerateQRCodeView:
+                    name: "qr_code"
+                    id: user_qr_code_screen
+
             MDNavigationDrawer:
                 id: nav_drawer
                 radius: (0, 16, 16, 0)
@@ -141,7 +200,7 @@
                         icon: "qrcode-scan"
                         text: "Generate QR-Code"
                         on_press:
-                        #    manager.current="pin"
+                            manager.current="qr_code"
                             nav_drawer.set_state("close")
 
                     MDNavigationDrawerDivider:

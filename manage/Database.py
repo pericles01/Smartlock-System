@@ -131,6 +131,7 @@ class Database:
         """
         command = f"SELECT firstname, lastname, door_number FROM users WHERE rfid_code={rfid}"
         res = self.__cursor.execute(command).fetchall()
+        print(res)
         if len(res)>0:
             return res[0]
         else:
@@ -141,7 +142,7 @@ class Database:
         Method used in UserMembership to update the user's PIN
         :param user_info: tuple of user's info in order to find him in the database
         :param new_user_pin: new PIN
-        :return: bool if the updated processed successfully or not
+        :return: bool: if the updated processed successfully or not
         """
         command = f"UPDATE users SET pin_code=? WHERE firstname=? AND lastname=? AND door_number=?"
         try:
@@ -157,6 +158,53 @@ class Database:
             print(e)
             return False
 
+    def update_qr_code(self, user_info, path:str) -> bool:
+        """
+        Method used in UserMembership to update the user's QR Code
+        :param user_info: tuple of user's info in order to find him in the database
+        :return: bool: if the updated processed successfully or not
+        """
+
+        command = f"UPDATE users SET qr_code=? WHERE firstname=? AND lastname=? AND door_number=?"
+
+        try:
+            assert len(user_info) == 3 and isinstance(path, str), "Path must be a os.path like string and user_info must have a length of 3"
+            end_list = list()
+            end_list.append(path)
+            end_list.extend(user_info)
+            self.__cursor.execute(command, end_list)
+            self.__db_connection.commit()
+            return True
+
+        except (AssertionError, sqlite3.OperationalError) as e:
+            print(e)
+            return False
+
+    def get_user_pin(self, user_info) -> int|None:
+        """
+
+        :param user_info:
+        :return:
+        """
+        command = "SELECT pin_code FROM users WHERE firstname=? AND lastname=? AND door_number=?"
+        res = self.__cursor.execute(command, user_info).fetchall()
+        if res[0][0]:
+            return res[0][0]
+        else:
+            return None
+
+    def get_user_qr_img_path(self, user_info) -> str|None:
+        """
+        Get the path of the saved qrcode
+        :param user_info:
+        :return: str path if path found else None
+        """
+        command = "SELECT qr_code FROM users WHERE firstname=? AND lastname=? AND door_number=?"
+        res = self.__cursor.execute(command, user_info).fetchall()
+        if res[0][0]:
+            return res[0][0]
+        else:
+            return None
 
 
 
