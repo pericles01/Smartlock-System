@@ -330,3 +330,8 @@ class SwipeToEditItem(MDCardSwipe):
     remove_item_confirmation = ObjectProperty()
     edit_item = ObjectProperty()
     edited = BooleanProperty()
+
+
+class UpdateCredentialView(MDScreen):
+    def __init__(self, **kwargs):
+        super(UpdateCredentialView, self).__init__(**kwargs)

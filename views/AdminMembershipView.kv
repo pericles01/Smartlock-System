@@ -1,4 +1,111 @@
 #: import GlobalComponents views.GlobalComponents
+#:import FadeTransition kivy.uix.screenmanager.FadeTransition
+
+<UpdateCredentialView>:
+    MDCard:
+        size_hint: .6, .9
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        padding : dp(15)
+        spacing : dp(20)
+        orientation : "vertical"
+
+        MDLabel:
+            text : 'Update login credentials'
+            font_style : 'H5'
+            halign : "center"
+            size_hint_x: .8 #, .5
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDSeparator:
+
+        MDRelativeLayout:
+            size_hint_x: .6
+            pos_hint: {"center_x": .5, "center_y": .5}
+            MDGridLayout:
+                rows: 2
+                spacing: dp(15)
+
+                MDLabel:
+                    text : 'Enter new username'
+                    font_style : 'H6'
+                    halign : "center"
+                    size_hint: .5, .5
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+                MDTextField :
+                    id: new_username_field
+                    hint_text : "Username *"
+                    multiline: False
+                    mode: "round"
+                    icon_left : "account"
+                    size_hint_x : .6
+                    font_size : 20
+                    pos_hint : {"center_x":.5, "center_y": .5}
+
+        MDSeparator:
+
+        MDRelativeLayout:
+            size_hint_x: .6
+            pos_hint: {"center_x": .5, "center_y": .5}
+            MDGridLayout:
+                rows: 2
+                spacing: dp(15)
+
+                MDLabel:
+                    text : 'Enter new password'
+                    font_style : 'H6'
+                    halign : "center"
+                    size_hint: .5, .5
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+                ClickableTextFieldRound:
+                    id: password_widget
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDSeparator:
+
+        MDRelativeLayout:
+            size_hint_x: .6
+            pos_hint: {"center_x": .5, "center_y": .5}
+            MDGridLayout:
+                rows: 2
+                spacing: dp(15)
+
+                MDLabel:
+                    text : 'Confirm new password'
+                    font_style : 'H6'
+                    halign : "center"
+                    size_hint: .5, .5
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
+                ClickableTextFieldRound:
+                    id: new_password_widget_confirmation
+
+        MDSeparator:
+
+        MDBoxLayout:
+            orientation: "vertical"
+            spacing: dp(10)
+
+            MDFillRoundFlatIconButton:
+                id: update_button
+                text: "Update & save"
+                icon: "content-save-check"
+                font_size : 15
+                pos_hint: {"center_x": .5, "center_y": .5}
+                #on_release: root.update_credentials()
+
+            MDLabel:
+                id: error_label
+                text : '* required fields'
+                font_style : 'Subtitle2'
+                theme_text_color: "Error"
+                halign : "center"
+                size_hint_x: .9
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+
 
 <SwipeToEditItem>:
     size_hint_y: None
@@ -47,7 +154,6 @@
             halign : "center"
             size_hint: .5, .5
             pos_hint: {"center_x": .5, "center_y": .5}
-            size: self.texture_size
         MDGridLayout:
             pos_hint: {"center_x": .5, "center_y": .5}
             cols: 2
@@ -295,88 +401,133 @@
 
         MDTopAppBar:
             pos_hint: {"top": 1}
-            title: "Admin Membership"
+            title: "Hello Admin!"
             anchor_title: "center"
             type_height: "small"
-            left_action_items: [["menu", lambda x: x]]
+            left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
             right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
 
-        Widget:
-            size_hint_y: None
-            height: dp(10)
+        MDNavigationLayout:
+            MDScreenManager:
+                id: manager
+                transition:
+                    FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
 
-        MDRelativeLayout:
-            size_hint: .8, .4
-            pos_hint: {"center_x": .5, "center_y": .5}
-            spacing: dp(5)
-            MDCard:
-                size_hint : .7, .9
-                pos_hint : {"center_x":.5,"center_y":.5}
-                elevation : 3
-                md_bg_color : CardBackgroundColor
-                spacing : dp(5)
-                orientation : "vertical"
-                shadow_offset: (0, 1)
-                MDLabel:
-                    text : 'Add User'
-                    font_style : 'H6'
-                    halign : "center"
-                    size_hint: .5, .5
-                    pos_hint: {"center_x": .5, "center_y": .5}
+                MDScreen:
+                    name: "manage"
+                    MDBoxLayout:
+                        orientation: "vertical"
+                        padding: 0, 0, 0, dp(10)
 
-                MDSeparator:
-                    color: "FFFFFF" # white
-                MDGridLayout:
-                    pos_hint: {"center_x": .5, "center_y": .5}
-                    cols: 2
-                    MDRelativeLayout:
-                        padding: dp(20)
-                        MDFillRoundFlatIconButton:
-                            text: "Load Users file"
-                            icon: "folder"
+                        MDRelativeLayout:
+                            size_hint: .8, .4
                             pos_hint: {"center_x": .5, "center_y": .5}
-                            on_release: root.file_manager_open()
+                            spacing: dp(5)
+                            MDCard:
+                                size_hint : .7, .9
+                                pos_hint : {"center_x":.5,"center_y":.5}
+                                elevation : 3
+                                md_bg_color : CardBackgroundColor
+                                spacing : dp(5)
+                                orientation : "vertical"
+                                shadow_offset: (0, 1)
+                                MDLabel:
+                                    text : 'Add User'
+                                    font_style : 'H6'
+                                    halign : "center"
+                                    size_hint: .5, .5
+                                    pos_hint: {"center_x": .5, "center_y": .5}
 
-                    MDRelativeLayout:
-                        padding: dp(20)
-                        MDFillRoundFlatIconButton:
-                            text: "fill the form"
-                            icon: "form-select"
+                                MDSeparator:
+                                    color: "FFFFFF" # white
+                                MDGridLayout:
+                                    pos_hint: {"center_x": .5, "center_y": .5}
+                                    cols: 2
+                                    MDRelativeLayout:
+                                        padding: dp(20)
+                                        MDFillRoundFlatIconButton:
+                                            text: "Load Users file"
+                                            icon: "folder"
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            on_release: root.file_manager_open()
+
+                                    MDRelativeLayout:
+                                        padding: dp(20)
+                                        MDFillRoundFlatIconButton:
+                                            text: "fill the form"
+                                            icon: "form-select"
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            on_release: root.show_userform_dialog()
+
+                        MDGridLayout:
+                            rows: 2
+                            #spacing: dp(5)
+                            size_hint_y: .2
+                            MDLabel:
+                                text : 'Users data preview'
+                                font_style : 'H6'
+                                halign : "center"
+                                size_hint: .5, None
+                                height: dp(25)
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                            MDLabel:
+                                text : 'Firstname | Lastname | RFID | Door number'
+                                font_style : 'Subtitle1'
+                                halign : "center"
+                                size_hint: .5, None
+                                height: dp(25)
+                                pos_hint: {"center_x": .5, "center_y": .5}
+
+                        MDRelativeLayout:
+                            size_hint_x: .5 #, .9
                             pos_hint: {"center_x": .5, "center_y": .5}
-                            on_release: root.show_userform_dialog()
+                            MDRecycleView:
+                                id: rv
+                                viewclass: 'SwipeToEditItem'
+                                RecycleBoxLayout:
+                                    default_size: None, dp(70)
+                                    default_size_hint: 1, None
+                                    size_hint_y: None
+                                    height: self.minimum_height #+ dp(20)
+                                    orientation: 'vertical'
+                                    spacing: dp(10)
+                                    padding: dp(10)
 
-        MDGridLayout:
-            rows: 2
-            #spacing: dp(5)
-            size_hint_y: .2
-            MDLabel:
-                text : 'Users data preview'
-                font_style : 'H6'
-                halign : "center"
-                size_hint: .5, None
-                height: dp(25)
-                pos_hint: {"center_x": .5, "center_y": .5}
-            MDLabel:
-                text : 'Firstname | Lastname | RFID | Door number'
-                font_style : 'Subtitle1'
-                halign : "center"
-                size_hint: .5, None
-                height: dp(25)
-                pos_hint: {"center_x": .5, "center_y": .5}
+                UpdateCredentialView:
+                    name: "update_credentials"
+                    id: update_credentials_view
 
-        MDRelativeLayout:
-            size_hint_x: .5 #, .9
-            pos_hint: {"center_x": .5, "center_y": .5}
-            MDRecycleView:
-                id: rv
-                viewclass: 'SwipeToEditItem'
-                RecycleBoxLayout:
-                    default_size: None, dp(70)
-                    default_size_hint: 1, None
-                    size_hint_y: None
-                    height: self.minimum_height #+ dp(20)
-                    orientation: 'vertical'
+
+            MDNavigationDrawer:
+                id: nav_drawer
+                radius: (0, 16, 16, 0)
+
+                MDNavigationDrawerMenu:
                     spacing: dp(10)
-                    padding: dp(10)
+                    DrawerClickableItem:
+                        icon: "library"
+                        text_right_color: "#4a4939" # white
+                        text: "Manage"
+                        on_press:
+                            manager.current="manage"
+                            nav_drawer.set_state("close")
 
+                    MDNavigationDrawerDivider:
 
+                    DrawerClickableItem:
+                        icon: "login"
+                        text: "Update Login Credentials"
+                        on_press:
+                            manager.current="update_credentials"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:
+
+                    DrawerClickableItem:
+                        icon: "alarm-light"
+                        text: "Urgency open door"
+                        on_press:
+                            #manager.current="qr_code"
+                            nav_drawer.set_state("close")
+
+                    MDNavigationDrawerDivider:
