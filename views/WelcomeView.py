@@ -38,9 +38,11 @@ class WelcomeScreen(MDFloatLayout):
     def show_dialog(self, instance: str):
         if instance.text_option == "Login with PIN":
             self.pin_dialog_content.ids.login_button.bind(on_press=self._verify_input_pin)
+            self.pin_dialog_content.ids.user_pin_login.ids.password_field.bind(on_text_validate=self._verify_input_pin)
             self.pin_dialog_content.ids.exit_button.bind(on_press=self.pin_dialog.dismiss)
             self.pin_dialog.content = self.pin_dialog_content
             self.pin_dialog.open()
+
         elif instance.text_option == "Login with RFID":
             print(f"{str(instance.icon_name)}")
             print("------------")

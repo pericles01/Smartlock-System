@@ -6,16 +6,18 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivymd.toast import toast
 from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.filemanager import MDFileManager
-from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.utils import get_color_from_hex
 from kivymd.color_definitions import colors
 import json
 from functools import partial
+
+from kivymd.uix.screen import MDScreen
+
 from manage.Database import Database
 from views.GlobalComponents import ConfirmationDialogContent
 
 
-class AdminMembershipView(MDFloatLayout):
+class AdminMembershipView(MDScreen):
     def __init__(self, **kwargs):
         super(AdminMembershipView, self).__init__(**kwargs)
 
@@ -45,6 +47,28 @@ class AdminMembershipView(MDFloatLayout):
         self.user_data = None
         self._db = Database()
         self._db.db_init()
+
+    def on_pre_enter(self, *args):
+        """
+        automatically update the users preview with the database content by entering the admmin membership view
+        :param args:
+        :return:
+        """
+        db_content = self._db.show_users_table()
+        if db_content:
+            self.user_data = db_content
+            rv_data = list()
+            for user in self.user_data:
+                rv_data.append(
+                    {
+                        "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
+                        "description": f"{user[4]}",
+                        "remove_item_confirmation": self.show_delete_confirmation_dialog,
+                        "edit_item": self.edit_item_callback
+                    }
+                )
+            self.ids.rv.data = rv_data
+
 
     def edit_item_callback(self, instance):
         self.show_user_info_dialog(instance)
