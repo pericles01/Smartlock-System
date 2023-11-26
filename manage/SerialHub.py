@@ -18,11 +18,11 @@ class SerialHub():
 
         return self._send_command2Hub(command, "status")
 
-    def send_open_command(self, door_number:int):
-        assert isinstance(door_number, int) and door_number in range(1, 17, 1), \
-            "door position must be an integer from 1 to 16"
+    def send_open_command(self, door_pos:int):
+        assert isinstance(door_pos, int) and door_pos in range(1, 17, 1), \
+            f"door position must be an integer from 1 to 16, got {door_pos}"
         hub_cmd = "31"
-        hub_addr = "0" + hex(door_number-1)[-1]
+        hub_addr = "0" + hex(door_pos-1)[-1]
         command = self._compute_command(hub_addr, hub_cmd)
 
         return self._send_command2Hub(command, "open")

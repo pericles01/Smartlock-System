@@ -43,18 +43,23 @@
     MDCard:
         pos_hint : {"center_x":.5,"center_y":.5}
         md_bg_color : CardBackgroundColor
-        padding : dp(20)
-        spacing : dp(10)
+        spacing: dp(10)
+        padding: dp(10)
         orientation : "vertical"
-        MDLabel:
-            text : 'Please enter your PIN'
-            font_style : 'H6'
-            halign : "center"
-            size_hint: .5, .5
+
+        MDRelativeLayout:
+            size_hint_x: .6
             pos_hint: {"center_x": .5, "center_y": .5}
-            #size: self.texture_size
-        ClickableTextFieldRound:
-            id: user_pin_login
+            MDBoxLayout:
+                orientation: "vertical"
+                spacing: dp(10)
+                MDLabel:
+                    text : 'Please enter your PIN'
+                    font_style : 'H6'
+                    halign : "center"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                ClickableTextFieldRound:
+                    id: user_pin_login
 
         MDSeparator:
 
@@ -62,6 +67,7 @@
             pos_hint: {"center_x": .5, "center_y": .5}
             cols: 2
             spacing: dp(15)
+            size_hint_y: .4
 
             MDRelativeLayout:
                 MDFillRoundFlatIconButton:

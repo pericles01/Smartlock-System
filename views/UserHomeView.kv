@@ -1,4 +1,4 @@
-<UserHomeView@MDRelativeLayout>:
+<UserHomeView>:
     BoxLayout:
         orientation: "vertical"
         Widget:
@@ -17,24 +17,26 @@
                 elevation: 4
                 shadow_offset: (0, 1)
                 md_bg_color : CardBackgroundColor
-                MDLabel:
-                    text : 'Door Status'
-                    font_style : 'H6'
-                    halign : "center"
-                    size_hint: .7, .2
-                    pos_hint: {"center_x": .5, "center_y": .5}
+
+                MDFloatLayout:
+                    MDLabel:
+                        text : 'Door Status'
+                        font_style : 'H6'
+                        halign : "center"
+                        size_hint_x: .7
+                        pos_hint: {"center_x": .5, "center_y": .5}
 
                 MDSeparator:
 
-                MDLabel:
-                    id: user_door_status
-                    md_bg_color: "F44336" #if user_door_status.text == "open" else app.theme_cls.primary_dark # "D32F2F"
-                    text : "open"
-                    bold: True
-                    font_style : 'H6'
-                    halign : "center"
-                    size_hint: .5, .6
-                    pos_hint: {"center_x": .5, "center_y": .5}
+                MDFloatLayout:
+                    MDLabel:
+                        id: user_door_status
+                        md_bg_color: "8BC34A" if user_door_status.text == "open" else "F44336" # light green or red
+                        bold: True
+                        font_style : 'H6'
+                        halign : "center"
+                        size_hint_x: .6
+                        pos_hint: {"center_x": .5, "center_y": .5}
 
                 MDSeparator:
 
@@ -42,5 +44,5 @@
                     MDRaisedButton:
                         id: open_button
                         text: "Open door"
-                        on_release: print("Send open command, args= user_door_number")
+                        on_release: root.open_user_door()
                         pos_hint: {"center_x": .5, "center_y": .5}

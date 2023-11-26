@@ -43,6 +43,7 @@ pip3 install kivymd
 
 # Install other project's libraries
 pip3 install pyserial pandas
+pip3 install qrcode
 
 # enable hardware acceleration
 sudo adduser "$USER" render

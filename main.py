@@ -4,6 +4,8 @@ from kivymd.uix.screenmanager import MDScreenManager
 from kivy.properties import ObjectProperty, NumericProperty
 #import cProfile
 from manage.SerialHub import SerialHub
+from manage.Database import Database
+from views.AdminMembershipView import AdminMembershipView
 import serial
 
 class NavigationScreenManager(MDScreenManager):
@@ -33,6 +35,7 @@ class NavigationScreenManager(MDScreenManager):
 class SmartlockApp(MDApp):
     manager = ObjectProperty(None)
     connected_doors = NumericProperty()
+    found_user = ObjectProperty()
 
     def build(self):
         self.theme_cls.theme_style = 'Dark'
