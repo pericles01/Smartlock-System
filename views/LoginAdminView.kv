@@ -29,7 +29,7 @@
 
     MDTextField :
         id: username_field
-        hint_text : "username"
+        hint_text : "username *"
         max_text_length: 10
         multiline: False
         mode: "round"
@@ -50,7 +50,7 @@
 
     MDLabel:
         id: error_label
-        text: " " if root.login_successful else "wrong credentials. Please try again!!"
+        text: "* required fields"
         halign: "center"
         size_hint_y : None
         height : dp(20)

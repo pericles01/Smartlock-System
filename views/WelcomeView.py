@@ -35,12 +35,18 @@ class WelcomeScreen(MDFloatLayout):
         self.membership_confirmation_content = MembershipConfirmationContent()
         self.found_user = None
 
+    def pin_dialog_dismiss_callback(self, instance):
+        # clear / reset
+        self.pin_dialog_content.ids.user_pin_login.ids.password_field.text = ""
+        self.pin_dialog_content.ids.error_label.text = "* required field"
+
     def show_dialog(self, instance: str):
         if instance.text_option == "Login with PIN":
             self.pin_dialog_content.ids.login_button.bind(on_press=self._verify_input_pin)
             self.pin_dialog_content.ids.user_pin_login.ids.password_field.bind(on_text_validate=self._verify_input_pin)
             self.pin_dialog_content.ids.exit_button.bind(on_press=self.pin_dialog.dismiss)
             self.pin_dialog.content = self.pin_dialog_content
+            self.pin_dialog.bind(on_dismiss=self.pin_dialog_dismiss_callback)
             self.pin_dialog.open()
 
         elif instance.text_option == "Login with RFID":
@@ -72,13 +78,13 @@ class WelcomeScreen(MDFloatLayout):
             status = doors_status[str(door_pos)]
             if status == "open":
                 toast(f"Door is already open",
-                      background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                 )
             else:
                 if hub.send_open_command(door_pos):
                     # ToDo buffer peep
                     toast(f"Door opened",
-                          background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                     )
                 # make sure the status changed
                 if doors_status == hub.send_status_command():
@@ -99,7 +105,7 @@ class WelcomeScreen(MDFloatLayout):
         manager.push("user_membership")
         # change screen
         toast(f"Successfully login into your membership",
-              background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
               )
 
 
@@ -130,7 +136,6 @@ class WelcomeScreen(MDFloatLayout):
                     self.found_user = user
                     # If found show dialog
                     self.pin_dialog.dismiss()
-                    self.pin_dialog_content.ids.user_pin_login.ids.password_field.text = ""
                     self.show_go_to_membership_dialog()
                 else:
                     self.pin_dialog_content.ids.error_label.text = "User not found, please verify your PIN input"

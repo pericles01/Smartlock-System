@@ -60,7 +60,7 @@
                     pos_hint: {"center_x": .5, "center_y": .5}
 
                 ClickableTextFieldRound:
-                    id: password_widget
+                    id: new_password_widget
                     pos_hint: {"center_x": .5, "center_y": .5}
 
         MDSeparator:
@@ -94,7 +94,7 @@
                 icon: "content-save-check"
                 font_size : 15
                 pos_hint: {"center_x": .5, "center_y": .5}
-                #on_release: root.update_credentials()
+                on_release: root.update_credentials()
 
             MDLabel:
                 id: error_label

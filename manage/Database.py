@@ -21,9 +21,21 @@ class Database:
             try:
                 self.__cursor.execute("CREATE TABLE users(firstname, lastname, rfid_code, door_number, description, pin_code, qr_code, face_id)"
                 )
-                print("Table created")
+                self.__cursor.execute("CREATE TABLE admins(username, password)")
+                admins = [("admin", "admin"), ("tech", "setup")]
+                self.__cursor.executemany("INSERT INTO admins(username, password) VALUES (?, ?)", admins)
+                self.__db_connection.commit()
+
+                print("Table Users created")
+                print(f"Content: {self.show_users_table(full=True)}")
+                print("Table Admins created")
+                print(f"Content: {self.show_admin_table()}")
+
             except sqlite3.OperationalError as e:
                 print(e)
+
+    def close_db_connection(self):
+        self.__db_connection.close()
 
     def add_users(self, users_list: list) -> bool:
         """
@@ -33,6 +45,7 @@ class Database:
         :return: bool: if the insertion was successful or not
         """
         try:
+            self.db_init(refresh=True)
             content = self.show_users_table()
             if content:
                 found = False
@@ -75,6 +88,10 @@ class Database:
             )
         return res.fetchall()
 
+    def show_admin_table(self) -> list:
+        res = self.__cursor.execute("SELECT * FROM admins ORDER BY username")
+        return res.fetchall()
+
     def update_user_basic_infos(self, user_info:list, new_infos:list):
         """
         Method used in AdminMembershipView to update user information such as firstname, lastname, rfid, door_number, description
@@ -94,6 +111,22 @@ class Database:
         except (AssertionError, sqlite3.OperationalError) as e:
             print(e)
             return False
+
+    def update_user_admin_credentials(self, new_admin_credentials:list, old_admin_credentials) -> bool:
+        try:
+            assert len(new_admin_credentials)==2 and len(old_admin_credentials)==2, "New and old admin credentials list must have a length 2: new username, new password"
+            end_list = list()
+            end_list.extend(new_admin_credentials)
+            end_list.extend(old_admin_credentials)
+            command = "UPDATE admins SET username=?, password=? WHERE username=? AND password=?"
+            self.__cursor.execute(command, end_list)
+            self.__db_connection.commit()
+            return True
+        except (AssertionError, sqlite3.OperationalError) as e:
+            print(e)
+            return False
+
+
 
     def delete_user(self, user_info)->bool:
         """
@@ -118,7 +151,6 @@ class Database:
         :param pin: input pin
         :return: list a user infos if found or None
         """
-
         command = "SELECT firstname, lastname, door_number FROM users WHERE pin_code=?"
         res = self.__cursor.execute(command, pin)
         return res.fetchall()
@@ -144,12 +176,13 @@ class Database:
         :param new_user_pin: new PIN
         :return: bool: if the updated processed successfully or not
         """
-        command = f"UPDATE users SET pin_code=? WHERE firstname=? AND lastname=? AND door_number=?"
+
         try:
             assert len(user_info) == 3 and isinstance(new_user_pin, int), "New user PIN must be am integer and user_info must have a length of 3"
             end_list = list()
             end_list.append(new_user_pin)
             end_list.extend(user_info)
+            command = f"UPDATE users SET pin_code=? WHERE firstname=? AND lastname=? AND door_number=?"
             self.__cursor.execute(command, end_list)
             self.__db_connection.commit()
             return True
@@ -165,13 +198,12 @@ class Database:
         :return: bool: if the updated processed successfully or not
         """
 
-        command = f"UPDATE users SET qr_code=? WHERE firstname=? AND lastname=? AND door_number=?"
-
         try:
             assert len(user_info) == 3 and isinstance(path, str), "Path must be a os.path like string and user_info must have a length of 3"
             end_list = list()
             end_list.append(path)
             end_list.extend(user_info)
+            command = f"UPDATE users SET qr_code=? WHERE firstname=? AND lastname=? AND door_number=?"
             self.__cursor.execute(command, end_list)
             self.__db_connection.commit()
             return True
