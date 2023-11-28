@@ -1,5 +1,9 @@
 import sys
+
+from kivy.utils import get_color_from_hex
 from kivymd.app import MDApp
+from kivymd.color_definitions import colors
+from kivymd.toast import toast
 from kivymd.uix.screenmanager import MDScreenManager
 from kivy.properties import ObjectProperty, NumericProperty
 #import cProfile
@@ -21,6 +25,9 @@ class NavigationScreenManager(MDScreenManager):
             # empty the screen stack
             self.screen_stack.clear()
             self.current = screen_name
+            toast(f"Logged out ...",
+                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                  )
 
 
     def pop(self):

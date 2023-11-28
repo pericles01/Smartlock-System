@@ -25,13 +25,13 @@ class UserHomeView(MDScreen):
 
             if self.status == "open":
                 toast(f"Door is already open",
-                      background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                       )
             else:
                 if self.__hub.send_open_command(self.door_pos):
                     # ToDo buffer peep
                     toast(f"Door opened",
-                          background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                           )
                 # make sure the status changed
                 doors_status = self.__hub.send_status_command()

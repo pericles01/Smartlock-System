@@ -69,7 +69,6 @@ class AdminMembershipView(MDScreen):
                 )
             self.ids.rv.data = rv_data
 
-
     def edit_item_callback(self, instance):
         self.show_user_info_dialog(instance)
 
@@ -84,6 +83,7 @@ class AdminMembershipView(MDScreen):
         :param path: path to the selected directory or file;
         '''
         try:
+            # ToDo verify that only the given format is loaded
             usecols = ["firstname", "lastname", "rfid", "door number", "description"]
             df = pd.read_csv(path, usecols=usecols)
             path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
@@ -94,7 +94,7 @@ class AdminMembershipView(MDScreen):
             df.sort_values(by=['firstname'], ascending=True, inplace=True)
             self.user_data = df.to_numpy().tolist()
             toast(f"Successfully loaded: {os.path.basename(path)}",
-                  background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                   )
             for user in self.user_data:
                 user[4] = user[4] if str(user[4]) != 'nan' else 'No Description'
@@ -153,7 +153,7 @@ class AdminMembershipView(MDScreen):
                 door_number = int(self.userform_content.ids.door_number_field.text.strip())
                 user_description = self.userform_content.ids.description_field.text.strip() if self.userform_content.ids.description_field.text.strip() != "" else "No Description"
                 toast(f"Successfully added user {firstname}, {lastname}",
-                      background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                 )
                 self._db.db_init(refresh=True)
                 if self._db.add_users([(firstname, lastname, rfid_code, door_number, user_description)]):
@@ -200,7 +200,7 @@ class AdminMembershipView(MDScreen):
                     door_number = int(self.user_info_content.ids.door_number_field.text.strip())
                     user_description = self.user_info_content.ids.description_field.text.strip()
                     toast(f"Successfully edited user {firstname}, {lastname}",
-                          background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                     )
 
                     old_user_infos = [start_info[0][0].strip(), start_info[0][1].strip(), int(start_info[0][2].strip())]
@@ -270,7 +270,7 @@ class AdminMembershipView(MDScreen):
         #self.ids.md_list.remove_widget(instance)
         user_info = (instance.text.split('|'), instance.description)
         toast(f"Successfully deleted user {user_info[0][0]}, {user_info[0][1]}",
-              background=get_color_from_hex(colors["Blue"]["500"]), duration=3
+              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
               )
         user2delete = (user_info[0][0].strip(), user_info[0][1].strip(), int(user_info[0][2].strip()))
         self._db.db_init(refresh=True)
@@ -330,3 +330,46 @@ class SwipeToEditItem(MDCardSwipe):
     remove_item_confirmation = ObjectProperty()
     edit_item = ObjectProperty()
     edited = BooleanProperty()
+
+
+class UpdateCredentialView(MDScreen):
+    def __init__(self, **kwargs):
+        super(UpdateCredentialView, self).__init__(**kwargs)
+        self._db = Database()
+
+    def update_credentials(self):
+
+        if self.ids.new_username_field.text.strip() and self.ids.new_password_widget.ids.password_field.text.strip() \
+            and self.ids.new_password_widget_confirmation.ids.password_field.text.strip():
+
+            if self.ids.new_password_widget.ids.password_field.text.strip() == self.ids.new_password_widget_confirmation.ids.password_field.text.strip():
+                # get old admin credentials
+                self._db.db_init(refresh=True)
+                old_admin_credentials = self._db.show_admin_table()[0]
+                print(f"Old Credentials: {old_admin_credentials}")
+                new_admin_credentials = [self.ids.new_username_field.text.strip(), self.ids.new_password_widget_confirmation.ids.password_field.text.strip()]
+                if self._db.update_user_admin_credentials(new_admin_credentials, old_admin_credentials):
+                    toast(f"Successfully updated admin credentials",
+                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                          )
+                    self.reset()
+                    print("----------------")
+                    print("Test Update")
+                    print(f"New Credentials: {self._db.show_admin_table()[0]}")
+            else:
+                self.ids.error_label.text = "New password must be equal to confirmation password"
+        else:
+            self.ids.error_label.text = "Please fill all required fields"
+
+    def reset(self):
+        self.ids.error_label.text = '* required fields'
+        self.ids.new_username_field.text = ""
+        self.ids.new_password_widget.ids.password_field.text = ""
+        self.ids.new_password_widget_confirmation.ids.password_field.text = ""
+
+    def on_leave(self, *args):
+        self.reset()
+
+
+
+
