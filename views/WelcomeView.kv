@@ -1,6 +1,32 @@
 #: import GlobalComponents views.GlobalComponents
 
-<MembershipConfirmationContent>
+<SnapshotDialogContent>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        orientation : "vertical"
+        spacing: dp(10)
+        padding: dp(10)
+        MDLabel:
+            id: label
+            #text : root.label_text
+            font_style : 'H5'
+            halign : "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_text_color: "Error"
+
+        MDSeparator:
+
+        FitImage:
+            id: image
+            #source: root.snapshot
+            #size_hint_y: .7
+            pos_hint: {"center_x": .5, "center_y": .5}
+            radius: 25, 25, 25, 25
+
+<MembershipConfirmationContent>:
     MDCard:
         pos_hint : {"center_x":.5,"center_y":.5}
         md_bg_color : CardBackgroundColor
@@ -12,7 +38,6 @@
             text : ""
             font_style : 'H5'
             halign : "center"
-            #size_hint_y: .5
             pos_hint: {"center_x": .5, "center_y": .5}
 
         MDSeparator:

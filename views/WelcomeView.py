@@ -8,9 +8,10 @@ from kivy.utils import get_color_from_hex
 from kivymd.color_definitions import colors
 from manage.SerialHub import SerialHub
 import serial
-from functools import partial
 from manage.Database import Database
 from kivymd.app import MDApp
+from kivy.clock import Clock
+from functools import partial
 import json
 import os
 import cv2
@@ -34,6 +35,12 @@ class WelcomeScreen(MDFloatLayout):
         self.membership_confirmation = Popup(title="Membership confirmation", title_align="center", title_size="20sp",
                                       size_hint=(0.6, 0.4), auto_dismiss=False)
         self.membership_confirmation_content = MembershipConfirmationContent()
+        self.snapshot_dialog = Popup(title="Video capture", title_align="center", title_size="20sp", size_hint=(0.8, 0.9),
+                                     auto_dismiss=False)
+        self.snapshot_dialog_content = SnapshotDialogContent()
+        self.__time_out = 0
+        Clock.max_iteration = 20
+        self.__save_snapshot_path = os.path.join(os.getcwd(), ".cache", "video_stream.png")
         self.found_user = None
 
     def pin_dialog_dismiss_callback(self, instance):
@@ -52,27 +59,65 @@ class WelcomeScreen(MDFloatLayout):
 
         elif instance.text_option == "Login with RFID":
             print(f"{str(instance.icon_name)}")
-            self.snap_save()
+
             print("------------")
         elif instance.text_option == "Login with QR Code":
-            print(f"{str(instance.icon_name)}")
-            print("------------")
-        else:
-            print(f"{str(instance.icon_name)}")
-            print("------------")
+            self.snapshot_dialog_content.ids.label.text = "Please place your QR Code on the camera"
 
-    def snap_save(self):
+            self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
+
+            Clock.schedule_interval(partial(self.snap_save, True), 0.2) # 5 fps
+            self.snapshot_dialog.content = self.snapshot_dialog_content
+            self.snapshot_dialog.open()
+
+        else: # Face ID
+            self.snapshot_dialog_content.ids.label.text = "Please place your Face at the camera"
+
+            self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
+
+            Clock.schedule_interval(partial(self.snap_save, False), 0.3)  # 5 fps
+            self.snapshot_dialog.content = self.snapshot_dialog_content
+            self.snapshot_dialog.open()
+
+
+    def snap_save(self, for_qr_code=True, *args):
         cam = cv2.VideoCapture(0)
         if cam.isOpened():
             result, image = cam.read()
             if result:
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                image = cv2.resize(image, (640, 480))
-                cv2.imshow("Stream", image)
-                save_path = os.path.join(os.getcwd(), ".cache", "video_stream.png")
-                cv2.imwrite(save_path, image)
+                cv2.imwrite(self.__save_snapshot_path, image)
+                self.snapshot_dialog_content.ids.image.reload()
+                cam.release()
+                if for_qr_code:
+                    pass
+                    # detect qr_code
 
-        cam.release()
+                    # if detected, search user
+                #else: # for face_id
+
+
+            if self.__time_out == 15: # 10 seconds
+
+                self.snapshot_dialog.dismiss()
+                self.__time_out = 0
+                toast(f"Timeout reached! No user found, please try again!!",
+                      background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                      )
+                return False
+            else:
+                self.__time_out += 1
+
+        else:
+            toast(f"Error while opening the camera, please try again!!",
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                  )
+            return False
+
+
+
+
+
 
 
     def _on_membership_confirmation_dismiss(self, instance):
@@ -168,3 +213,8 @@ class MembershipConfirmationContent(RelativeLayout):
     go2membership = ObjectProperty()
     def __init__(self, **kwargs):
         super(MembershipConfirmationContent, self).__init__(**kwargs)
+
+class SnapshotDialogContent(RelativeLayout):
+    snapshot = StringProperty()
+    def __init__(self, **kwargs):
+        super(SnapshotDialogContent, self).__init__(**kwargs)
