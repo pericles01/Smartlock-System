@@ -13,6 +13,7 @@ from manage.Database import Database
 from kivymd.app import MDApp
 import json
 import os
+import cv2
 
 class LoginOptionCard(MDCard):
     text_option = StringProperty()
@@ -51,6 +52,7 @@ class WelcomeScreen(MDFloatLayout):
 
         elif instance.text_option == "Login with RFID":
             print(f"{str(instance.icon_name)}")
+            self.snap_save()
             print("------------")
         elif instance.text_option == "Login with QR Code":
             print(f"{str(instance.icon_name)}")
@@ -58,6 +60,20 @@ class WelcomeScreen(MDFloatLayout):
         else:
             print(f"{str(instance.icon_name)}")
             print("------------")
+
+    def snap_save(self):
+        cam = cv2.VideoCapture(0)
+        if cam.isOpened():
+            result, image = cam.read()
+            if result:
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                image = cv2.resize(image, (640, 480))
+                cv2.imshow("Stream", image)
+                save_path = os.path.join(os.getcwd(), ".cache", "video_stream.png")
+                cv2.imwrite(save_path, image)
+
+        cam.release()
+
 
     def _on_membership_confirmation_dismiss(self, instance):
         # reset
