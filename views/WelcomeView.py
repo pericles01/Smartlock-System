@@ -132,6 +132,7 @@ class WelcomeScreen(MDFloatLayout):
             toast(f"Error while opening the camera, please try again!!",
                   background=get_color_from_hex(colors["Red"]["500"]), duration=5
                   )
+            self.snapshot_dialog.dismiss()
             cam.release()
             return False
 
