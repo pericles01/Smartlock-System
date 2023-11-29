@@ -15,6 +15,7 @@ from functools import partial
 import json
 import os
 import cv2
+import numpy as np
 
 class LoginOptionCard(MDCard):
     text_option = StringProperty()
@@ -75,8 +76,9 @@ class WelcomeScreen(MDFloatLayout):
 
             self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
 
-            Clock.schedule_interval(partial(self.snap_save, False), 0.3)  # 5 fps
+            Clock.schedule_interval(partial(self.snap_save, False), 0.2)  # 5 fps
             self.snapshot_dialog.content = self.snapshot_dialog_content
+            self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
             self.snapshot_dialog.open()
 
 
@@ -85,17 +87,34 @@ class WelcomeScreen(MDFloatLayout):
         if cam.isOpened():
             result, image = cam.read()
             if result:
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                if for_qr_code:
+                    qr_detector = cv2.QRCodeDetector()
+                    data, bbox, _ = qr_detector.detectAndDecode(image)
+                    if bbox is not None:
+                        for points_array in bbox:
+                            if data:
+                                data = data.split("|")
+                                self.found_user = [data[0], data[1], int(data[2])]
+                                print(f"Detected QR Code Data: {data}, Found User: {self.found_user}")
+                                color = (0, 255, 0)
+                            else:
+                                color = (0, 0, 255)
+
+                            cv2.polylines(image, [points_array.astype(int)], isClosed=True, color=color,
+                                          thickness=2)
+
+                # else: # for face_id
+
                 cv2.imwrite(self.__save_snapshot_path, image)
                 self.snapshot_dialog_content.ids.image.reload()
-                cam.release()
-                if for_qr_code:
-                    pass
-                    # detect qr_code
-
-                    # if detected, search user
-                #else: # for face_id
-
+                if self.found_user is not None:
+                    self.snapshot_dialog.dismiss()
+                    cam.release()
+                    toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
+                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5
+                          )
+                    self.show_go_to_membership_dialog()
+                    return False
 
             if self.__time_out == 15: # 10 seconds
 
@@ -104,6 +123,7 @@ class WelcomeScreen(MDFloatLayout):
                 toast(f"Timeout reached! No user found, please try again!!",
                       background=get_color_from_hex(colors["Red"]["500"]), duration=5
                       )
+                cam.release()
                 return False
             else:
                 self.__time_out += 1
@@ -112,12 +132,13 @@ class WelcomeScreen(MDFloatLayout):
             toast(f"Error while opening the camera, please try again!!",
                   background=get_color_from_hex(colors["Red"]["500"]), duration=5
                   )
+            cam.release()
             return False
 
-
-
-
-
+    def _snapshot_dialog_dismiss_callback(self, instance):
+        image = np.zeros((600, 600, 3), dtype='uint8')
+        cv2.imwrite(self.__save_snapshot_path, image)
+        self.snapshot_dialog_content.ids.image.reload()
 
 
     def _on_membership_confirmation_dismiss(self, instance):
