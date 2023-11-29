@@ -66,6 +66,7 @@ class WelcomeScreen(MDFloatLayout):
             self.snapshot_dialog_content.ids.label.text = "Please place your QR Code on the camera"
 
             self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
+            self.snapshot_dialog_content.ids.image.reload()
 
             Clock.schedule_interval(partial(self.snap_save, True), 0.2) # 5 fps
             self.snapshot_dialog.content = self.snapshot_dialog_content
@@ -156,7 +157,6 @@ class WelcomeScreen(MDFloatLayout):
             return False
 
     def _snapshot_dialog_dismiss_callback(self, instance):
-        print("Snapshot dismissed")
         image = np.zeros((600, 600, 3), dtype='uint8')
         cv2.imwrite(self.__save_snapshot_path, image)
         self.snapshot_dialog_content.ids.image.reload()
