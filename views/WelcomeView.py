@@ -69,6 +69,7 @@ class WelcomeScreen(MDFloatLayout):
 
             Clock.schedule_interval(partial(self.snap_save, True), 0.2) # 5 fps
             self.snapshot_dialog.content = self.snapshot_dialog_content
+            self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
             self.snapshot_dialog.open()
 
         else: # Face ID
@@ -93,9 +94,8 @@ class WelcomeScreen(MDFloatLayout):
                     if bbox is not None:
                         for points_array in bbox:
                             if data:
-                                data = data.split("|")
-                                self.found_user = [data[0], data[1], int(data[2])]
-                                print(f"Detected QR Code Data: {data}, Found User: {self.found_user}")
+                                self.found_user = data #[data[0], data[1], int(data[2])]
+                                print(f"Detected QR Code Data: {data}")
                                 color = (0, 255, 0)
                             else:
                                 color = (0, 0, 255)
@@ -110,10 +110,29 @@ class WelcomeScreen(MDFloatLayout):
                 if self.found_user is not None:
                     self.snapshot_dialog.dismiss()
                     cam.release()
-                    toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
-                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5
-                          )
-                    self.show_go_to_membership_dialog()
+                    self.__time_out = 0
+                    try:
+                        self.found_user = self.found_user.split("|")
+                        self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
+                        db = Database()
+                        db.db_init(refresh=True)
+                        if db.is_in_db(self.found_user):
+                            toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
+                                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5
+                                  )
+                            self.show_go_to_membership_dialog()
+                        else:
+                            toast(f"User not found, please try again!!",
+                                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                                  )
+                            self.found_user= None
+                    except Exception as e:
+                        print(e)
+                        toast(f"User not found, please try again!!",
+                              background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                              )
+                        self.found_user = None
+
                     return False
 
             if self.__time_out == 15: # 10 seconds
@@ -137,6 +156,7 @@ class WelcomeScreen(MDFloatLayout):
             return False
 
     def _snapshot_dialog_dismiss_callback(self, instance):
+        print("Snapshot dismissed")
         image = np.zeros((600, 600, 3), dtype='uint8')
         cv2.imwrite(self.__save_snapshot_path, image)
         self.snapshot_dialog_content.ids.image.reload()

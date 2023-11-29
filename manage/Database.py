@@ -1,6 +1,5 @@
 import sqlite3
 import os
-from manage.User import User
 
 class Database:
     def __init__(self):
@@ -237,6 +236,21 @@ class Database:
             return res[0][0]
         else:
             return None
+
+    def is_in_db(self, user_info:list)-> bool:
+        """
+        Check if the user is in the database
+        :param user_info:
+        :return: bool
+        """
+
+        command = "SELECT * FROM users WHERE firstname=? AND lastname=? AND door_number=?"
+        res = self.__cursor.execute(command, user_info).fetchall()
+        print(f"User infos: {user_info}, result: {res}")
+        if len(res)>0:
+            return True
+        else:
+            return False
 
 
 
