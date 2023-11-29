@@ -109,7 +109,7 @@ class GenerateQRCodeView(MDScreen):
             border=4,
         )
 
-        data = "Unlock Smartlock"
+        data = "|".join([str(x) for x in self.found_user])
         qr.add_data(data)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
@@ -121,7 +121,9 @@ class GenerateQRCodeView(MDScreen):
             random_character = choice(characters)
             random_string += random_character
 
-        path = os.path.join(os.getcwd(), ".cache", random_string+"_qr_code.png")
+        dir_path = os.path.join(os.getcwd(), ".cache", "qr_codes")
+        os.makedirs(dir_path, exist_ok=True)
+        path = os.path.join(dir_path, random_string+"_qr_code.png")
         print(path)
         img.save(path)
         self.ids.image.source = path
