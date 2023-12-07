@@ -82,7 +82,7 @@ class SerialHub():
         # verify status of all doors
         doors_info = self.send_status_command()
         for k in doors_info.keys():
-            if doors_info[k] == "closed":
+            if doors_info[k] == "closed": # if there is still a door closed
                 cnt += 1
         if not cnt:
             # if one door is still closed, try again

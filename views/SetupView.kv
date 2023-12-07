@@ -45,24 +45,35 @@
                         elevation: 4
                         shadow_offset: (0, 1)
                         md_bg_color : CardBackgroundColor
-                        MDLabel:
-                            text : 'Connected lockers'
-                            font_style : 'H6'
-                            halign : "center"
-                            size_hint: .7, .5
-                            pos_hint: {"center_x": .5, "center_y": .5}
+
+                        MDGridLayout:
+                            cols:2
+                            #padding: dp(5)
+
+                            MDLabel:
+                                text : 'Connected lockers'
+                                font_style : 'H6'
+                                halign : "center"
+                                #size_hint: .7, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
+
+                            MDLabel:
+                                id: locker_number_label
+                                md_bg_color: app.theme_cls.primary_dark
+                                text : str(app.connected_doors) if app.connected_doors else "10"
+                                bold: True
+                                font_style : 'H6'
+                                halign : "center"
+                                #size_hint: .5, .5
+                                pos_hint: {"center_x": .5, "center_y": .5}
 
                         MDSeparator:
 
-                        MDLabel:
-                            id: locker_number_label
-                            md_bg_color: app.theme_cls.primary_dark # "D32F2F"
-                            text : str(app.connected_doors) if app.connected_doors else "10"
-                            bold: True
-                            font_style : 'H6'
-                            halign : "center"
-                            size_hint: .5, .5
+                        MDRaisedButton:
+                            text: "Open all doors"
+                            size_hint_y: .5
                             pos_hint: {"center_x": .5, "center_y": .5}
+                            on_release: root.open_all_doors()
 
                 MDFloatLayout:
                     MDCard:
