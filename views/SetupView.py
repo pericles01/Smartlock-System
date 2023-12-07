@@ -51,31 +51,6 @@ class SetupView(MDScreen):
         self.is_dialog_dismissed = False # reset
         self.dialog.open()
 
-    def test_setup(self):
-        num2pos = dict()
-        number_connected_door = int(self.ids.locker_number_label.text.strip())
-        guessed_pos_list = list()
-        start_number = self.start_number
-        cnt = 0
-        guessed_pos = 0
-        while 1:
-            door_number = str(start_number + cnt)
-            self.ids.technician_label.text = "Please close door number: " + door_number
-            number = random.randint(0, number_connected_door)
-            if guessed_pos == number:
-                continue  # skip
-            if number not in guessed_pos_list and number != 0:  # skip
-                guessed_pos = number  # update
-                guessed_pos_list.append(guessed_pos)
-                num2pos[door_number] = guessed_pos
-                cnt += 1
-                if cnt == int(number_connected_door):
-                    print("fertig")
-                    break
-
-        path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
-        with open(path, mode='w') as f:
-            json.dump(num2pos, f, indent=2)
 
     def _setup(self, _hub, *args):
 
@@ -92,11 +67,17 @@ class SetupView(MDScreen):
                         self._num2pos[door_number] = int(k)
                         self._skip_door_pos.append(k)
                         self._cnt += 1
+                        #ToDo: Buffer Beep
+                        
                         if self._cnt == self._number_connected_door:
                             # save the mapping dict for future use
                             path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
                             with open(path, mode='w') as f:
                                 json.dump(self._num2pos, f, indent=2)
+                            
+                            self.ids.technician_label.text ="Setup finished"
+                            self._open_alert_dialog(text = "Setup finished")
+                            self.ids.start_number_field.text = ""
                             return False
 
     def _open_door_clock(self, *args):
@@ -127,11 +108,11 @@ class SetupView(MDScreen):
             return False  # stop clock
 
     def open_all_doors(self):
-        Clock.schedule_interval(self._open_door_clock, 1)
+        Clock.schedule_interval(self._open_door_clock, .01)
 
     def show_ok_dialog(self):
 
-        if not self.ids.start_number_field.text:
+        if not self.ids.start_number_field.text.strip():
             self._open_alert_dialog(text="Start number is required")
 
         else:
@@ -147,7 +128,7 @@ class SetupView(MDScreen):
                     self._door_info_pos = hub.send_status_command()
                     self._skip_door_pos = list()
                     self._num2pos = dict()
-                    Clock.schedule_interval(partial(self._setup, hub), 10)
+                    Clock.schedule_interval(partial(self._setup, hub), 1)
 
                 else:
                     self.ids.technician_label.text = "Please click on the open all doors button"
