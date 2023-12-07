@@ -70,26 +70,6 @@ class SerialHub():
         else:
             return True
 
-    def open_all_doors(self)-> bool | tuple[bool, str]:
-        cnt = 0
-        try:
-            for i in range(16):
-                self.send_open_command(i + 1)
-                time.sleep(1)
-        except serial.SerialException as e:
-            return False, "Please make sure that the Hub device is connected correctly"
-
-        # verify status of all doors
-        doors_info = self.send_status_command()
-        for k in doors_info.keys():
-            if doors_info[k] == "closed": # if there is still a door closed
-                cnt += 1
-        if not cnt:
-            # if one door is still closed, try again
-            self.open_all_doors()
-
-        return True
-
     def get_position_connected_doors(self, door_info:dict) -> list[int]:
         """
         :param door_info: dict of the door infos

@@ -163,6 +163,7 @@ class WelcomeScreen(MDFloatLayout):
         # reset
         self.found_user = None
         print("User reset")
+        #pass
 
     def _open_door_callback(self, door_number:int, *args):
         hub = SerialHub()

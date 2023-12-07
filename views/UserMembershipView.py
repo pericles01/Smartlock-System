@@ -22,10 +22,10 @@ class UserMembershipView(MDScreen):
         self.ids.update_pin_screen.found_user = self.found_user
         self.ids.user_qr_code_screen.found_user = self.found_user
         self.ids.manager.current = "home" # reload the page to trigger his on_pre_enter event
-
+    
     def on_leave(self, *args):
-        #MDApp.get_running_app().found_user = "" # reset
-        print("Logged out user")
+        self.ids.manager.current = "pin"
+
 
 
 class UpdateUserPinView(MDScreen):
