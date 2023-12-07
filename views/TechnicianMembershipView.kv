@@ -10,7 +10,7 @@
     right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
 
 
-<TechnicianMembershipView@FloatLayout>:
+<TechnicianMembershipView>:
     MDTopAppBar:
         pos_hint: {"top": 1}
         title: "Hello technician!"
@@ -26,14 +26,13 @@
                 FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
 
             MDScreen:
-                name: "setup"
-                SetupView:
-
-            MDScreen:
                 name: "update"
                 MDLabel:
                     text: "Update screen"
                     halign: "center"
+            
+            SetupView:
+                name: "setup"
 
         MDNavigationDrawer:
             id: nav_drawer

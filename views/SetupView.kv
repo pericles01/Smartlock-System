@@ -48,7 +48,7 @@
 
                         MDGridLayout:
                             cols:2
-                            #padding: dp(5)
+                            padding: dp(5)
 
                             MDLabel:
                                 text : 'Connected lockers'
@@ -60,7 +60,6 @@
                             MDLabel:
                                 id: locker_number_label
                                 md_bg_color: app.theme_cls.primary_dark
-                                text : str(app.connected_doors) if app.connected_doors else "10"
                                 bold: True
                                 font_style : 'H6'
                                 halign : "center"
@@ -113,12 +112,13 @@
 
             MDLabel:
                 id: technician_label
-                text: "Technician text"
+                text: "!! Technician Info Board !!"
                 halign: "center"
                 md_bg_color: [35/255,49/255,48/255,1]
                 size_hint_y: .6
                 pos_hint: {"center_x": .5, "center_y": .5}
                 font_style : 'H6'
+                theme_text_color: "Error"
 
 
 

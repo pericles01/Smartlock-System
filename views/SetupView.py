@@ -1,6 +1,6 @@
 from kivy.properties import BooleanProperty
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.relativelayout import RelativeLayout
+from kivymd.uix.screen import MDScreen
 from kivy.uix.popup import Popup
 import json
 from manage.SerialHub import SerialHub
@@ -10,13 +10,13 @@ from functools import partial
 import  serial
 import random
 
-class SetupView(RelativeLayout):
+class SetupView(MDScreen):
     isSetup = BooleanProperty()
     start_number = 0
     is_dialog_dismissed = False
     def __init__(self, **kwargs):
         super(SetupView, self).__init__(**kwargs)
-        self.dialog = Popup(title="Alert", title_align="center", title_size="20sp", size_hint=(0.5, 0.5),
+        self.dialog = Popup(title="Alert", title_align="center", title_size="20sp", size_hint=(0.5, 0.3),
                             auto_dismiss=False)
         # will come in handy later
         self._skip_door_pos = list()
@@ -26,6 +26,16 @@ class SetupView(RelativeLayout):
         self._number_connected_door = int()
         self._is_all_doors_opened = False
         self._door_position = 1
+        self._hub = SerialHub()
+
+    def on_pre_enter(self, *args):
+        cnt = 0
+        door_infos = self._hub.send_status_command()
+        for k in door_infos.keys():
+            if door_infos[k] == "closed": # if there is still a door closed
+                cnt += 1
+        self.ids.locker_number_label.text = str(cnt)
+
 
     def _on_dismiss_callback(self, instance):
         print("dialog dismissed")
@@ -43,7 +53,7 @@ class SetupView(RelativeLayout):
 
     def test_setup(self):
         num2pos = dict()
-        number_connected_door = int(self.ids.locker_number_label.text)
+        number_connected_door = int(self.ids.locker_number_label.text.strip())
         guessed_pos_list = list()
         start_number = self.start_number
         cnt = 0
@@ -67,7 +77,7 @@ class SetupView(RelativeLayout):
         with open(path, mode='w') as f:
             json.dump(num2pos, f, indent=2)
 
-    def _setup(self, _hub):
+    def _setup(self, _hub, *args):
 
         door_number = str(self.start_number + self._cnt)
         self.ids.technician_label.text ="Please close door number: " + door_number
@@ -92,17 +102,28 @@ class SetupView(RelativeLayout):
     def _open_door_clock(self, *args):
         try:
             hub = SerialHub()
-            self._door_position = 1
+            self.ids.technician_label.text = "Opening all doors..."
             if hub.send_open_command(self._door_position):
                 self._door_position += 1
 
             if self._door_position == 17:
+                cnt = 0
+                doors_info = self._hub.send_status_command()
+                for k in doors_info.keys():
+                    if doors_info[k] == "closed": # if there is still a door closed
+                        cnt += 1
+                if not cnt:
+                    self._is_all_doors_opened = True
+                    self._open_alert_dialog(text = "All doors are open")
+                    self.ids.technician_label.text = "All doors are open. The setup can now begin!"
+                else:
+                    self._open_alert_dialog(text = "All doors are not open. Please check for any mechanic problem on closed doors and rebegin!")
+
                 self._door_position = 1
-                self._is_all_doors_opened = True
-                self.ids.technician_label.text = "All doors are open"
                 return False # stop clock
+            
         except serial.SerialException as e:
-            self.ids.technician_label.text = "No Hub detected!! Please verify if the hub is connected"
+            self._open_alert_dialog(text= "No Hub detected!! Please verify if the hub is connected")
             return False  # stop clock
 
     def open_all_doors(self):
