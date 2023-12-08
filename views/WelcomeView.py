@@ -119,19 +119,16 @@ class WelcomeScreen(MDFloatLayout):
                         db.db_init(refresh=True)
                         if db.is_in_db(self.found_user):
                             toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
-                                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5
-                                  )
+                                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
                             self.show_go_to_membership_dialog()
                         else:
                             toast(f"User not found, please try again!!",
-                                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
-                                  )
-                            self.found_user= None
+                                  background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                            self.found_user = None
                     except Exception as e:
                         print(e)
                         toast(f"User not found, please try again!!",
-                              background=get_color_from_hex(colors["Red"]["500"]), duration=5
-                              )
+                              background=get_color_from_hex(colors["Red"]["500"]), duration=5)
                         self.found_user = None
 
                     return False
@@ -166,6 +163,7 @@ class WelcomeScreen(MDFloatLayout):
         # reset
         self.found_user = None
         print("User reset")
+        #pass
 
     def _open_door_callback(self, door_number:int, *args):
         hub = SerialHub()

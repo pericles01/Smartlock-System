@@ -41,7 +41,6 @@ class NavigationScreenManager(MDScreenManager):
 
 class SmartlockApp(MDApp):
     manager = ObjectProperty(None)
-    connected_doors = NumericProperty()
     found_user = ObjectProperty()
 
     def build(self):
@@ -60,16 +59,11 @@ class SmartlockApp(MDApp):
 
         try:
             door_pos_info = hub.send_status_command()
-            for key in door_pos_info.keys():
-                if door_pos_info[key] == "closed":
-                    cnt +=1
-            self.connected_doors = cnt
         except (serial.SerialException, ValueError) as e:
             print(e)
             print("Please make sure that the Hub device is connected correctly")
             #print("Exiting...")
             #sys.exit(1)
-            self.connected_doors = 8
 
 
     #def on_stop(self):

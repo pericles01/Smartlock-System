@@ -30,28 +30,27 @@ class UserHomeView(MDScreen):
             else:
                 if self.__hub.send_open_command(self.door_pos):
                     # ToDo buffer peep
-                    toast(f"Door opened",
-                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
-                          )
-                # make sure the status changed
-                doors_status = self.__hub.send_status_command()
-                status = doors_status[str(self.door_pos)]
+                    # make sure the status changed
+                    doors_status = self.__hub.send_status_command()
+                    status = doors_status[str(self.door_pos)]
 
-                if status == self.status:
-                    toast(f"Could not open the door, try again",
-                          background=get_color_from_hex(colors["Red"]["500"]), duration=3
-                          )
-                else:
-                    self.ids.user_door_status.text = status
+                    if status == self.status:
+                        toast(f"Could not open the door, check for any mechanical problem and try again",
+                            background=get_color_from_hex(colors["Red"]["500"]), duration=3
+                            )
+                    else:
+                        self.ids.user_door_status.text = status
+                        toast(f"Door opened",
+                            background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                            )
+                
 
         except (serial.SerialException, ValueError) as e:
             toast("Could not open the door. Please make sure that the Hub device is connected correctly and try again",
                   background=get_color_from_hex(colors["Red"]["500"]), duration=5
                   )
-    #def on_motion(self, etype, me):
+
     def on_pre_enter(self, *args):
-        self.__hub = SerialHub()
-        #self.found_user = MDApp.get_running_app().found_user already binded in UserMembershipView
         if self.found_user:
             # retrieve door position
             path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
@@ -66,8 +65,8 @@ class UserHomeView(MDScreen):
                 self.status = doors_status[str(self.door_pos)]
                 self.ids.user_door_status.text = self.status
 
-            except (serial.SerialException, ValueError):
-                self.ids.user_door_status.text = "closed"
+            except (serial.SerialException, ValueError) as e:
+                self.ids.user_door_status.text = str(e)
 
     def on_leave(self, *args):
         self.door_pos = int()
