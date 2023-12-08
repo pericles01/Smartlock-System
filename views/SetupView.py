@@ -1,5 +1,8 @@
 from kivy.properties import BooleanProperty
 from kivy.uix.floatlayout import FloatLayout
+from kivy.utils import get_color_from_hex
+from kivymd.color_definitions import colors
+from kivymd.toast import toast
 from kivymd.uix.screen import MDScreen
 from kivy.uix.popup import Popup
 import json
@@ -29,12 +32,17 @@ class SetupView(MDScreen):
         self._hub = SerialHub()
 
     def on_pre_enter(self, *args):
-        cnt = 0
-        door_infos = self._hub.send_status_command()
-        for k in door_infos.keys():
-            if door_infos[k] == "closed": # if there is still a door closed
-                cnt += 1
-        self.ids.locker_number_label.text = str(cnt)
+        try:
+            cnt = 0
+            door_infos = self._hub.send_status_command()
+            for k in door_infos.keys():
+                if door_infos[k] == "closed": # if there is still a door closed
+                    cnt += 1
+            self.ids.locker_number_label.text = str(cnt)
+
+        except serial.SerialException as e:
+            self.ids.locker_number_label.text = "0"
+
 
 
     def _on_dismiss_callback(self, instance):
@@ -108,7 +116,11 @@ class SetupView(MDScreen):
             return False  # stop clock
 
     def open_all_doors(self):
-        Clock.schedule_interval(self._open_door_clock, .01)
+        if int(self.ids.locker_number_label.text.strip()) > 0:
+            Clock.schedule_interval(self._open_door_clock, .01)
+        else:
+            toast(f"Please connect doors and try again!!",
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=5)
 
     def show_ok_dialog(self):
 
