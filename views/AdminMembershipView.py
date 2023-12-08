@@ -10,11 +10,11 @@ from kivy.utils import get_color_from_hex
 from kivymd.color_definitions import colors
 import json
 from functools import partial
-
 from kivymd.uix.screen import MDScreen
-
 from manage.Database import Database
+from manage.SerialHub import SerialHub
 from views.GlobalComponents import ConfirmationDialogContent
+from kivy.clock import Clock
 
 
 class AdminMembershipView(MDScreen):
@@ -23,7 +23,7 @@ class AdminMembershipView(MDScreen):
 
         self.manager_open = False
         self.file_manager = MDFileManager(
-            exit_manager=self.exit_manager, select_path=self.select_path, selector="file", ext=[".csv", ".json"]#,preview=True
+            exit_manager=self.exit_manager, select_path=self.select_path, selector="file", ext=[".csv", ".json"]
         )
 
         self.userform_dialog = Popup(title="User Form", title_align="center", title_size="20sp", size_hint=(0.8, 0.9),
@@ -38,6 +38,10 @@ class AdminMembershipView(MDScreen):
                                       size_hint=(0.6, 0.4), auto_dismiss=False)
         self.delete_confirmation_dialog_content = ConfirmationDialogContent()
 
+        self.urgency_open_dialog = Popup(title="Urgency door open", title_align="center", title_size="20sp",
+                                      size_hint=(0.8, 0.5), auto_dismiss=False)
+        self.urgency_open_dialog_content = UrgencyDoorOpen()
+
         # set later in add user form
         self.firstname = None
         self.lastname = None
@@ -45,6 +49,9 @@ class AdminMembershipView(MDScreen):
         self.user_description = None
         # set later in add users with file
         self.user_data = None
+        self._door_pos = int()
+        self._hub = SerialHub()
+        self.__time_out = int()
         self._db = Database()
         self._db.db_init()
 
@@ -64,7 +71,8 @@ class AdminMembershipView(MDScreen):
                         "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
                         "description": f"{user[4]}",
                         "remove_item_confirmation": self.show_delete_confirmation_dialog,
-                        "edit_item": self.edit_item_callback
+                        "edit_item": self.edit_item_callback,
+                        "urgency_open": self.urgency_open_callback
                     }
                 )
             self.ids.rv.data = rv_data
@@ -113,7 +121,8 @@ class AdminMembershipView(MDScreen):
                         "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
                         "description": f"{user[4]}",
                         "remove_item_confirmation": self.show_delete_confirmation_dialog,
-                        "edit_item": self.edit_item_callback
+                        "edit_item": self.edit_item_callback,
+                        "urgency_open": self.urgency_open_callback
                     }
                 )
             self.ids.rv.data = rv_data
@@ -165,7 +174,8 @@ class AdminMembershipView(MDScreen):
                                 "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
                                 "description": f"{user[4]}",
                                 "remove_item_confirmation": self.show_delete_confirmation_dialog,
-                                "edit_item": self.edit_item_callback
+                                "edit_item": self.edit_item_callback,
+                                "urgency_open": self.urgency_open_callback
                             }
                         )
                     self.ids.rv.data = rv_data
@@ -215,7 +225,8 @@ class AdminMembershipView(MDScreen):
                                     "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
                                     "description": f"{user[4]}",
                                     "remove_item_confirmation": self.show_delete_confirmation_dialog,
-                                    "edit_item": self.edit_item_callback
+                                    "edit_item": self.edit_item_callback,
+                                    "urgency_open": self.urgency_open_callback
                                 }
                             )
                         self.ids.rv.data = rv_data
@@ -228,7 +239,6 @@ class AdminMembershipView(MDScreen):
                         print(f"Table content length: {len(self.user_data)}")
                         print("Content:")
                         print(f"{self.user_data}")
-                        # ToDo Update Swipe View
                         self.user_info_dialog.dismiss()
 
                 except ValueError:
@@ -284,7 +294,8 @@ class AdminMembershipView(MDScreen):
                         "text": f"{user[0]} | {user[1]} | {user[2]} | {user[3]}",
                         "description": f"{user[4]}",
                         "remove_item_confirmation": self.show_delete_confirmation_dialog,
-                        "edit_item": self.edit_item_callback
+                        "edit_item": self.edit_item_callback,
+                        "urgency_open": self.urgency_open_callback
                     }
                 )
             self.ids.rv.data = rv_data
@@ -312,6 +323,50 @@ class AdminMembershipView(MDScreen):
         self.delete_confirmation_dialog.open()
 
 
+    def _urgency_dialog_dismiss(self, instance):
+        self.__time_out = 0
+        self._door_pos = 0
+
+    def _get_urgency_card_uid(self, instance):
+
+        # activate the serial reader and get the uid
+        urgency_uid = None
+        if urgency_uid:
+            if self._hub.send_open_command(self._door_pos):
+                self.urgency_open_dialog.dismiss()
+                toast(f"Successfully opened user door!!",
+                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5
+                      )
+                return False
+
+        if self.__time_out == 30:  # 10 seconds
+            self.urgency_open_dialog.dismiss()
+            toast(f"Timeout reached! No Urgency card detected, please try again!!",
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                  )
+            return False
+        else:
+            self.__time_out += 1
+
+
+    def urgency_open_callback(self, instance):
+        text = instance.text.split("|")
+        door_number = int(text[3].strip())
+        print(f"User Door Number: {door_number}")
+        path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
+        with open(path, "r") as f:
+            door_pos_mapping = json.load(f)
+            self._door_pos = int(door_pos_mapping[str(door_number)])
+
+        self.urgency_open_dialog_content.ids.user_info_label.text = "User: " + text[0] + ", " + text[1]
+        self.urgency_open_dialog.content = self.urgency_open_dialog_content
+        self.urgency_open_dialog.bind(on_dismiss=self._urgency_dialog_dismiss)
+        self.urgency_open_dialog.open()
+        Clock.max_iteration = 20
+        Clock.schedule_interval(self._get_urgency_card_uid, .2)
+
+
+
 class AddUserForm(RelativeLayout):
     def __init__(self, **kwargs):
         super(AddUserForm, self).__init__(**kwargs)
@@ -329,8 +384,12 @@ class SwipeToEditItem(MDCardSwipe):
     description = StringProperty()
     remove_item_confirmation = ObjectProperty()
     edit_item = ObjectProperty()
-    edited = BooleanProperty()
+    urgency_open = ObjectProperty()
 
+
+class UrgencyDoorOpen(RelativeLayout):
+    def __init__(self, **kwargs):
+        super(UrgencyDoorOpen, self).__init__(**kwargs)
 
 class UpdateCredentialView(MDScreen):
     def __init__(self, **kwargs):
@@ -369,6 +428,8 @@ class UpdateCredentialView(MDScreen):
 
     def on_leave(self, *args):
         self.reset()
+
+
 
 
 
