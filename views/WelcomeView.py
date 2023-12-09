@@ -1,3 +1,4 @@
+import face_recognition
 from kivy.properties import  StringProperty, ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.relativelayout import RelativeLayout
@@ -16,6 +17,9 @@ import json
 import os
 import cv2
 import numpy as np
+
+from manage.rpi_face_recon import predict
+
 
 class LoginOptionCard(MDCard):
     text_option = StringProperty()
@@ -89,6 +93,8 @@ class WelcomeScreen(MDFloatLayout):
         if cam.isOpened():
             result, image = cam.read()
             if result:
+                db = Database()
+                db.db_init(refresh=True)
                 if for_qr_code:
                     qr_detector = cv2.QRCodeDetector()
                     data, bbox, _ = qr_detector.detectAndDecode(image)
@@ -104,34 +110,68 @@ class WelcomeScreen(MDFloatLayout):
                             cv2.polylines(image, [points_array.astype(int)], isClosed=True, color=color,
                                           thickness=2)
 
-                # else: # for face_id
+                    cv2.imwrite(self.__save_snapshot_path, image)
+                    self.snapshot_dialog_content.ids.image.reload()
+                    if self.found_user is not None:
+                        self.snapshot_dialog.dismiss()
+                        cam.release()
+                        self.__time_out = 0
+                        try:
+                            self.found_user = self.found_user.split("|")
+                            self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
 
-                cv2.imwrite(self.__save_snapshot_path, image)
-                self.snapshot_dialog_content.ids.image.reload()
-                if self.found_user is not None:
-                    self.snapshot_dialog.dismiss()
-                    cam.release()
-                    self.__time_out = 0
-                    try:
-                        self.found_user = self.found_user.split("|")
-                        self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
-                        db = Database()
-                        db.db_init(refresh=True)
-                        if db.is_in_db(self.found_user):
-                            toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
-                                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
-                            self.show_go_to_membership_dialog()
-                        else:
+                            if db.is_in_db(self.found_user):
+                                toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
+                                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+                                self.show_go_to_membership_dialog()
+                            else:
+                                toast(f"User not found, please try again!!",
+                                      background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                                self.found_user = None
+                        except Exception as e:
+                            print(e)
                             toast(f"User not found, please try again!!",
                                   background=get_color_from_hex(colors["Red"]["500"]), duration=5)
                             self.found_user = None
-                    except Exception as e:
-                        print(e)
-                        toast(f"User not found, please try again!!",
-                              background=get_color_from_hex(colors["Red"]["500"]), duration=5)
-                        self.found_user = None
 
-                    return False
+                        return False
+                else: # for face_id
+                    cv2.imwrite(self.__save_snapshot_path, image)
+                    self.snapshot_dialog_content.ids.image.reload()
+                    face_locations = face_recognition.face_locations(image)
+                    if face_locations:
+                        save_path = os.path.join(os.getcwd(), ".cache/trained_knn_model.clf")
+                        predictions = predict(image, model_path=save_path)
+                        name = predictions[0][0]
+                        self.snapshot_dialog.dismiss()
+
+                        if name == "unknown":
+                            toast(f"User not found, please try again!!",
+                                  background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                        else:
+                            try:
+                                self.found_user = name.split("_")
+                                self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
+                                if db.is_in_db(self.found_user):
+                                    toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
+                                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+
+                                    self.show_go_to_membership_dialog()
+                                else:
+                                    toast(f"User not found, please try again!!",
+                                          background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                                    self.found_user = None
+
+                            except Exception as e:
+                                print(e)
+                                self.found_user = None
+                                toast(f"User not found, please try again!!",
+                                      background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+
+
+                        cam.release()
+                        self.__time_out = 0
+                        return False
 
             if self.__time_out == 15: # 10 seconds
 

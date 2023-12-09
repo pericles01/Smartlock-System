@@ -192,7 +192,6 @@ class RegisterFaceReconView(MDScreen):
                                     print("Training complete!")
                                     return False
 
-
                 if self.__time_out == 15:
 
                     self.snapshot_dialog.dismiss()
@@ -218,7 +217,7 @@ class RegisterFaceReconView(MDScreen):
         self.snapshot_dialog.content = self.snapshot_dialog_content
         self.snapshot_dialog.open()
         dir_path = os.path.join(os.getcwd(), ".cache", "face_recon")
-        self.__save_snapshot_path = os.path.join(dir_path, self.found_user[0] + "_" + self.found_user[1])
+        self.__save_snapshot_path = os.path.join(dir_path, "_".join([str(x) for x in self.found_user]))
         os.makedirs(self.__save_snapshot_path, exist_ok=True)
         Clock.schedule_interval(self.snap_save, 0.2)
 
