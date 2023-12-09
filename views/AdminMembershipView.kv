@@ -1,6 +1,38 @@
 #: import GlobalComponents views.GlobalComponents
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
+<UrgencyDoorOpen>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        padding : dp(15)
+        spacing : dp(20)
+        orientation : "vertical"
+
+        MDLabel:
+            id: user_info_label
+            font_style : 'H6'
+            halign : "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDSeparator:
+
+        MDLabel:
+            text : "Please Scan the urgency card to open the user's door"
+            font_style : 'H6'
+            halign : "center"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_text_color: "Error"
+
+        MDIconButton:
+            icon: "account-card"
+            icon_size: "60sp"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_icon_color: "Error" #app.theme_cls.primary_color
+
+
 <UpdateCredentialView>:
     MDCard:
         size_hint: .6, .9
@@ -110,7 +142,8 @@
 <SwipeToEditItem>:
     size_hint_y: None
     height: content.height
-    swipe_distance: 25
+    #swipe_distance: 50
+    max_opened_x: dp(150)
     type_swipe: "hand"
 
     MDCardSwipeLayerBox:
@@ -127,6 +160,11 @@
             pos_hint: {"center_y": .5}
             on_release: root.edit_item(root)
 
+        MDIconButton:
+            icon: "alarm-light"
+            pos_hint: {"center_y": .5}
+            on_release: root.urgency_open(root)
+
     MDCardSwipeFrontBox:
 
         TwoLineListItem:
@@ -134,11 +172,8 @@
             text: root.text
             secondary_text: root.description
             _no_ripple_effect: True
-            #divider_color: [1, 1, 1, 1] # white
             bg_color: CardBackgroundColor
             radius: [16, 16, 16, 16]
-
-
 
 
 <AddUserForm>:
@@ -519,15 +554,6 @@
                         text: "Update Login Credentials"
                         on_press:
                             manager.current="update_credentials"
-                            nav_drawer.set_state("close")
-
-                    MDNavigationDrawerDivider:
-
-                    DrawerClickableItem:
-                        icon: "alarm-light"
-                        text: "Urgency open door"
-                        on_press:
-                            #manager.current="qr_code"
                             nav_drawer.set_state("close")
 
                     MDNavigationDrawerDivider:
