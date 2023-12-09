@@ -211,6 +211,26 @@ class Database:
             print(e)
             return False
 
+    def update_face_id(self, user_info, path:str) -> bool:
+        """
+        Method used in UserMembership to update the user's Face Id
+        :param user_info: tuple of user's info in order to find him in the database
+        :return: bool: if the updated processed successfully or not
+        """
+        try:
+            assert len(user_info) == 3 and isinstance(path, str), "Path must be a os.path like string and user_info must have a length of 3"
+            end_list = list()
+            end_list.append(path)
+            end_list.extend(user_info)
+            command = f"UPDATE users SET face_id=? WHERE firstname=? AND lastname=? AND door_number=?"
+            self.__cursor.execute(command, end_list)
+            self.__db_connection.commit()
+            return True
+
+        except (AssertionError, sqlite3.OperationalError) as e:
+            print(e)
+            return False
+
     def get_user_pin(self, user_info) -> int|None:
         """
 

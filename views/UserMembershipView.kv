@@ -2,6 +2,66 @@
 #: import UserHomeView views.UserHomeView
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
+<SnapshotDialogContent>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        orientation : "vertical"
+        spacing: dp(10)
+        padding: dp(10)
+        MDLabel:
+            id: label
+            text: "Please scan your face on the camera"
+            font_style : 'H5'
+            halign : "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_text_color: "Error"
+
+        MDSeparator:
+
+        FitImage:
+            id: image
+            #source: root.snapshot
+            #size_hint_y: .7
+            pos_hint: {"center_x": .5, "center_y": .5}
+            radius: 25, 25, 25, 25
+
+<RegisterFaceReconView>:
+    MDCard:
+        size_hint: .5, .5
+        spacing: dp(10)
+        padding: dp(10)
+        pos_hint: {"center_x": .5, "center_y": .5}
+        orientation: "vertical"
+        elevation: 4
+        shadow_offset: (0, 1)
+        md_bg_color : CardBackgroundColor
+
+        MDLabel:
+            text: "Register Face Recognition"
+            halign: "center"
+            size_hint_y : None
+            height : dp(50)
+            font_style: "H5"
+
+        MDSeparator:
+
+        MDLabel:
+            text : "Please Click on the icon to scan your face!"
+            font_style : 'H6'
+            halign : "center"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_text_color: "Error"
+
+        MDIconButton:
+            icon: "face-recognition"
+            icon_size: "60sp"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_icon_color: "Error" #"Custom"
+            #icon_color: app.theme_cls.primary_color
+            on_release: root.open_snapshot_dialog()
 
 <GenerateQRCodeView>:
     MDFloatLayout:
@@ -173,6 +233,10 @@
                     name: "qr_code"
                     id: user_qr_code_screen
 
+                RegisterFaceReconView:
+                    name: "face_recon"
+                    id: face_recon_screen
+
             MDNavigationDrawer:
                 id: nav_drawer
                 radius: (0, 16, 16, 0)
@@ -211,7 +275,7 @@
                         icon: "face-recognition"
                         text: "Update Face recognition"
                         on_press:
-                        #    manager.current="pin"
+                            manager.current="face_recon"
                             nav_drawer.set_state("close")
 
                     MDNavigationDrawerDivider:

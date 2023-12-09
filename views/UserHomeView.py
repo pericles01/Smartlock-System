@@ -66,7 +66,7 @@ class UserHomeView(MDScreen):
                 self.ids.user_door_status.text = self.status
 
             except (serial.SerialException, ValueError) as e:
-                self.ids.user_door_status.text = str(e)
+                self.ids.user_door_status.text = "No Door Connected"
 
     def on_leave(self, *args):
         self.door_pos = int()

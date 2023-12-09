@@ -1,14 +1,21 @@
+import cv2
+import face_recognition
 from kivy.properties import ObjectProperty
+from kivy.uix.popup import Popup
 from kivy.utils import get_color_from_hex
 from kivymd.app import MDApp
 from kivymd.color_definitions import colors
 from kivymd.toast import toast
+from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.screen import MDScreen
 from manage.Database import Database
 import qrcode
 from random import choice
 import os
 import string
+from manage.rpi_face_recon import *
+from kivy.clock import Clock
+
 class UserMembershipView(MDScreen):
     found_user = ObjectProperty()
     def __init__(self, **kwargs):
@@ -21,6 +28,7 @@ class UserMembershipView(MDScreen):
         self.ids.user_welcome_screen.found_user = self.found_user
         self.ids.update_pin_screen.found_user = self.found_user
         self.ids.user_qr_code_screen.found_user = self.found_user
+        self.ids.face_recon_screen.found_user = self.found_user
         self.ids.manager.current = "home" # reload the page to trigger his on_pre_enter event
     
     def on_leave(self, *args):
@@ -136,7 +144,85 @@ class GenerateQRCodeView(MDScreen):
                   background=get_color_from_hex(colors["Red"]["500"]), duration=5
                   )
 
+class RegisterFaceReconView(MDScreen):
+    found_user = ObjectProperty()
+    def __init__(self, **kwargs):
+        super(RegisterFaceReconView, self).__init__(**kwargs)
+        self.__save_snapshot_path = None
+        self.snapshot_dialog = Popup(title="Video capture", title_align="center", title_size="20sp",
+                                     size_hint=(0.8, 0.9), auto_dismiss=False)
+        self.snapshot_dialog_content = SnapshotDialogContent()
+        self.__time_out = 0
+        self.__cnt = 0
+        self.__db = Database()
+
+    def on_enter(self, *args):
+        if self.found_user:
+            print(f"User: {self.found_user}")
+            self.__db.db_init(refresh=True)
+
+    def snap_save(self, *args):
+        cam = cv2.VideoCapture(0)
+        if cam.isOpened():
+            result, image = cam.read()
+            if result:
+                face_locations = face_recognition.face_locations(image)
+                if face_locations:
+
+                    if self.__time_out % 2 == 0:
+                        self.__cnt += 1
+                        path = os.path.join(self.__save_snapshot_path, str(self.__cnt)+".png")
+                        cv2.imwrite(path, image)
+                        self.snapshot_dialog_content.ids.image.source = path
+                        self.snapshot_dialog_content.ids.image.reload()
+                        if self.__cnt == 5:
+                            if self.__db.update_face_id(self.found_user, self.__save_snapshot_path):
+                                self.__cnt = 0
+                                self.__time_out = 0
+                                cam.release()
+                                self.snapshot_dialog.dismiss()
+                                print("** Test Face Id **")
+                                print(f"{self.__db.show_users_table(full=True)}")
+                                toast(f"Successfully Registered face id",
+                                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+                                print("Training KNN classifier...")
+                                path = os.path.join(os.getcwd(), ".cache/face_recon")
+                                save_path = os.path.join(os.getcwd(), ".cache/trained_knn_model.clf")
+                                if train(path, model_save_path=save_path, n_neighbors=2):
+                                    print("Training complete!")
+                                    return False
 
 
+                if self.__time_out == 15:
 
+                    self.snapshot_dialog.dismiss()
+                    self.__time_out = 0
+                    toast(f"Timeout reached! No face detected for face id, please try again!!",
+                          background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                          )
+                    cam.release()
+                    return False
+                else:
+                    self.__time_out += 1
+
+        else:
+            toast(f"Error while opening the camera, please try again!!",
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                  )
+            self.snapshot_dialog.dismiss()
+            cam.release()
+            return False
+
+    def open_snapshot_dialog(self):
+        self.snapshot_dialog_content.ids.image.source = os.path.join(os.getcwd(), ".cache", "video_stream.png")
+        self.snapshot_dialog.content = self.snapshot_dialog_content
+        self.snapshot_dialog.open()
+        dir_path = os.path.join(os.getcwd(), ".cache", "face_recon")
+        self.__save_snapshot_path = os.path.join(dir_path, self.found_user[0] + "_" + self.found_user[1])
+        os.makedirs(self.__save_snapshot_path, exist_ok=True)
+        Clock.schedule_interval(self.snap_save, 0.2)
+
+class SnapshotDialogContent(MDFloatLayout):
+    def __init__(self, **kwargs):
+        super(SnapshotDialogContent, self).__init__(**kwargs)
 
