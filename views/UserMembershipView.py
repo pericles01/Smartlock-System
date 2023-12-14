@@ -107,7 +107,7 @@ class GenerateQRCodeView(MDScreen):
     def generate_qr_code(self):
         # Find & delete old path
         qr_path = self.__db.get_user_qr_img_path(self.found_user)
-        if qr_path:
+        if os.path.exists(qr_path):
             os.remove(qr_path)
 
         qr = qrcode.QRCode(
