@@ -15,7 +15,9 @@ from kivy.clock import Clock
 from functools import partial
 import json
 import os
+import io
 import cv2
+from picamera2 import Picamera2
 import numpy as np
 
 from manage.rpi_face_recon import predict
@@ -47,11 +49,22 @@ class WelcomeScreen(MDFloatLayout):
         Clock.max_iteration = 20
         self.__save_snapshot_path = os.path.join(os.getcwd(), ".cache", "video_stream.png")
         self.found_user = None
+        self._db = Database()
+        self._is_rpi = self.is_raspberrypi()
+        self._picam2 = None
+        self._cv_cam = None
 
     def pin_dialog_dismiss_callback(self, instance):
         # clear / reset
         self.pin_dialog_content.ids.user_pin_login.ids.password_field.text = ""
         self.pin_dialog_content.ids.error_label.text = "* required field"
+
+    def is_raspberrypi(self):
+        try:
+            with io.open('/sys/firmware/devicetree/base/model', 'r') as m:
+                if 'raspberry pi' in m.read().lower(): return True
+        except Exception: pass
+        return False
 
     def show_dialog(self, instance: str):
         if instance.text_option == "Login with PIN":
@@ -71,7 +84,7 @@ class WelcomeScreen(MDFloatLayout):
 
             self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
             self.snapshot_dialog_content.ids.image.reload()
-
+            self._db.db_init(refresh=True)
             Clock.schedule_interval(partial(self.snap_save, True), 0.2) # 5 fps
             self.snapshot_dialog.content = self.snapshot_dialog_content
             self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
@@ -81,7 +94,8 @@ class WelcomeScreen(MDFloatLayout):
             self.snapshot_dialog_content.ids.label.text = "Please place your Face at the camera"
 
             self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
-
+            self.snapshot_dialog_content.ids.image.reload()
+            self._db.db_init(refresh=True)
             Clock.schedule_interval(partial(self.snap_save, False), 0.2)  # 5 fps
             self.snapshot_dialog.content = self.snapshot_dialog_content
             self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
@@ -89,19 +103,120 @@ class WelcomeScreen(MDFloatLayout):
 
 
     def snap_save(self, for_qr_code=True, *args):
-        cam = cv2.VideoCapture(0)
-        if cam.isOpened():
-            result, image = cam.read()
+        if self._is_rpi:
+            return self._rpi_snap(for_qr_code)
+        else:
+            return self._common_os_snap(for_qr_code)
+        
+    def _rpi_snap(self, _for_qr_code=True):
+        if self._picam2 is None:
+            self._picam2 = Picamera2()
+            config = self._picam2.create_still_configuration({"size": (400, 400), "format": "RGB888"})
+            self._picam2.configure(config)
+        self._picam2.start(show_preview=False)
+
+        self._picam2.capture_file(self.__save_snapshot_path)
+        image = self._picam2.capture_array()
+        if _for_qr_code:
+            qr_detector = cv2.QRCodeDetector()
+            data, bbox, _ = qr_detector.detectAndDecode(image)
+            if bbox is not None:
+                for points_array in bbox:
+                    if data:
+                        print(f"Detected QR Code Data: {data}")
+                        self.found_user = data
+                        color = (0, 255, 0)
+                    else:
+                        color = (0, 0, 255)
+                        print("QR Code data can't be detected")
+
+                    cv2.polylines(image, [points_array.astype(int)], isClosed=True, color=color,
+                                    thickness=2)
+            else:
+                print("No QR Code detected")
+            
+            cv2.imwrite(self.__save_snapshot_path, image)
+            self.snapshot_dialog_content.ids.image.reload()
+            if self.found_user is not None:
+                self.snapshot_dialog.dismiss()
+                try:
+                    self.found_user = self.found_user.split("|")
+                    self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
+
+                    if self._db.is_in_db(self.found_user):
+                        toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
+                                background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+                        self.show_go_to_membership_dialog()
+                    else:
+                        toast(f"User not found, please try again!!",
+                                background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                        self.found_user = None
+                except Exception as e:
+                    print(e)
+                    toast(f"User not found, please try again!!",
+                            background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                    self.found_user = None
+
+                return False
+            
+        else: # for face_id
+            cv2.imwrite(self.__save_snapshot_path, image)
+            self.snapshot_dialog_content.ids.image.reload()
+            face_locations = face_recognition.face_locations(image)
+            if face_locations:
+                save_path = os.path.join(os.getcwd(), ".cache/trained_knn_model.clf")
+                predictions = predict(image, model_path=save_path)
+                name = predictions[0][0]
+
+                self.snapshot_dialog.dismiss()
+
+                if name == "unknown":
+                    toast(f"User not found, please try again!!",
+                            background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                else:
+                    try:
+                        self.found_user = name.split("_")
+                        self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
+                        if self._db.is_in_db(self.found_user):
+                            toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
+                                    background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+
+                            self.show_go_to_membership_dialog()
+                        else:
+                            toast(f"User not found, please try again!!",
+                                    background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                            self.found_user = None
+
+                    except Exception as e:
+                        print(e)
+                        self.found_user = None
+                        toast(f"User not found, please try again!!",
+                                background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+
+                return False
+            
+        if self.__time_out == 15: # 10 seconds
+
+            self.snapshot_dialog.dismiss()
+            toast(f"Timeout reached! No user found, please try again!!",
+                    background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                    )
+            return False
+        else:
+            self.__time_out += 1
+        
+    def _common_os_snap(self, _for_qr_code=True):
+        self._cv_cam = cv2.VideoCapture(0)
+        if self._cv_cam.isOpened():
+            result, image = self._cv_cam.read()
             if result:
-                db = Database()
-                db.db_init(refresh=True)
-                if for_qr_code:
+                if _for_qr_code:
                     qr_detector = cv2.QRCodeDetector()
                     data, bbox, _ = qr_detector.detectAndDecode(image)
                     if bbox is not None:
                         for points_array in bbox:
                             if data:
-                                self.found_user = data #[data[0], data[1], int(data[2])]
+                                self.found_user = data
                                 print(f"Detected QR Code Data: {data}")
                                 color = (0, 255, 0)
                             else:
@@ -114,13 +229,11 @@ class WelcomeScreen(MDFloatLayout):
                     self.snapshot_dialog_content.ids.image.reload()
                     if self.found_user is not None:
                         self.snapshot_dialog.dismiss()
-                        cam.release()
-                        self.__time_out = 0
                         try:
                             self.found_user = self.found_user.split("|")
                             self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
 
-                            if db.is_in_db(self.found_user):
+                            if self._db.is_in_db(self.found_user):
                                 toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
                                       background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
                                 self.show_go_to_membership_dialog()
@@ -152,7 +265,7 @@ class WelcomeScreen(MDFloatLayout):
                             try:
                                 self.found_user = name.split("_")
                                 self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
-                                if db.is_in_db(self.found_user):
+                                if self._db.is_in_db(self.found_user):
                                     toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
                                           background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
 
@@ -168,19 +281,15 @@ class WelcomeScreen(MDFloatLayout):
                                 toast(f"User not found, please try again!!",
                                       background=get_color_from_hex(colors["Red"]["500"]), duration=5)
 
-
-                        cam.release()
-                        self.__time_out = 0
                         return False
 
             if self.__time_out == 15: # 10 seconds
 
                 self.snapshot_dialog.dismiss()
-                self.__time_out = 0
                 toast(f"Timeout reached! No user found, please try again!!",
                       background=get_color_from_hex(colors["Red"]["500"]), duration=5
                       )
-                cam.release()
+                
                 return False
             else:
                 self.__time_out += 1
@@ -190,13 +299,19 @@ class WelcomeScreen(MDFloatLayout):
                   background=get_color_from_hex(colors["Red"]["500"]), duration=5
                   )
             self.snapshot_dialog.dismiss()
-            cam.release()
             return False
+   
 
     def _snapshot_dialog_dismiss_callback(self, instance):
         image = np.zeros((600, 600, 3), dtype='uint8')
         cv2.imwrite(self.__save_snapshot_path, image)
         self.snapshot_dialog_content.ids.image.reload()
+        self.__time_out = 0
+        if self._is_rpi:
+            self._picam2.stop_preview()
+            self._picam2.stop()
+        else:
+            self._cv_cam.release()
 
 
     def _on_membership_confirmation_dismiss(self, instance):

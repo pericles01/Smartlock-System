@@ -12,6 +12,8 @@ from manage.Database import Database
 import qrcode
 from random import choice
 import os
+import io
+from picamera2 import Picamera2
 import string
 from manage.rpi_face_recon import *
 from kivy.clock import Clock
@@ -155,20 +157,82 @@ class RegisterFaceReconView(MDScreen):
         self.__time_out = 0
         self.__cnt = 0
         self.__db = Database()
+        self._is_rpi = self.is_raspberrypi()
+        self._picam2 = None
+        self._cv_cam = None
+        self._no_face_img_path = os.path.join(os.getcwd(), ".cache", "video_stream.png")
 
     def on_enter(self, *args):
         if self.found_user:
             print(f"User: {self.found_user}")
             self.__db.db_init(refresh=True)
 
+    def is_raspberrypi(self):
+        try:
+            with io.open('/sys/firmware/devicetree/base/model', 'r') as m:
+                if 'raspberry pi' in m.read().lower(): return True
+        except Exception: pass
+        return False
+    
     def snap_save(self, *args):
-        cam = cv2.VideoCapture(0)
-        if cam.isOpened():
-            result, image = cam.read()
+        if self._is_rpi:
+            return self._rpi_snap()
+        else:
+            return self._common_os_snap()
+
+    def _show_on_snap_dialog(self, _image):
+        cv2.imwrite(self._no_face_img_path, _image)
+        self.snapshot_dialog_content.ids.image.source = self._no_face_img_path
+        self.snapshot_dialog_content.ids.image.reload() 
+
+    def _rpi_snap(self):
+        if self._picam2 is None:
+            self._picam2 = Picamera2()
+            config = self._picam2.create_still_configuration({"size": (400, 400), "format": "RGB888"})
+            self._picam2.configure(config)
+        self._picam2.start(show_preview=False)
+        image = self._picam2.capture_array()
+        face_locations = face_recognition.face_locations(image)
+        if face_locations:
+
+            if self.__time_out % 2 == 0: #skip 2 frames/iterations
+                self.__cnt += 1
+                path = os.path.join(self.__save_snapshot_path, str(self.__cnt)+".png")
+                cv2.imwrite(path, image)
+                self.snapshot_dialog_content.ids.image.source = path
+                self.snapshot_dialog_content.ids.image.reload()
+                if self.__cnt == 5:
+                    if self.__db.update_face_id(self.found_user, self.__save_snapshot_path):
+                        self.snapshot_dialog.dismiss()
+                        print("** Test Face Id **")
+                        print(f"{self.__db.show_users_table(full=True)}")
+                        toast(f"Successfully Registered face id",
+                                background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+                        print("Training KNN classifier...")
+                        path = os.path.join(os.getcwd(), ".cache/face_recon")
+                        save_path = os.path.join(os.getcwd(), ".cache/trained_knn_model.clf")
+                        if train(path, model_save_path=save_path, n_neighbors=2):
+                            print("Training complete!")
+                            return False
+        else:
+            self._show_on_snap_dialog(image)
+
+        if self.__time_out == 15:
+            self.snapshot_dialog.dismiss()
+            toast(f"Timeout reached! No face detected for face id, please try again!!",
+                    background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                    )
+            return False
+        else:
+            self.__time_out += 1
+    
+    def _common_os_snap(self):
+        self._cv_cam = cv2.VideoCapture(0)
+        if self._cv_cam.isOpened():
+            result, image = self._cv_cam.read()
             if result:
                 face_locations = face_recognition.face_locations(image)
                 if face_locations:
-
                     if self.__time_out % 2 == 0:
                         self.__cnt += 1
                         path = os.path.join(self.__save_snapshot_path, str(self.__cnt)+".png")
@@ -177,9 +241,6 @@ class RegisterFaceReconView(MDScreen):
                         self.snapshot_dialog_content.ids.image.reload()
                         if self.__cnt == 5:
                             if self.__db.update_face_id(self.found_user, self.__save_snapshot_path):
-                                self.__cnt = 0
-                                self.__time_out = 0
-                                cam.release()
                                 self.snapshot_dialog.dismiss()
                                 print("** Test Face Id **")
                                 print(f"{self.__db.show_users_table(full=True)}")
@@ -191,15 +252,14 @@ class RegisterFaceReconView(MDScreen):
                                 if train(path, model_save_path=save_path, n_neighbors=2):
                                     print("Training complete!")
                                     return False
+                else:
+                    self._show_on_snap_dialog(image)
 
                 if self.__time_out == 15:
-
                     self.snapshot_dialog.dismiss()
-                    self.__time_out = 0
                     toast(f"Timeout reached! No face detected for face id, please try again!!",
                           background=get_color_from_hex(colors["Red"]["500"]), duration=5
                           )
-                    cam.release()
                     return False
                 else:
                     self.__time_out += 1
@@ -209,12 +269,24 @@ class RegisterFaceReconView(MDScreen):
                   background=get_color_from_hex(colors["Red"]["500"]), duration=5
                   )
             self.snapshot_dialog.dismiss()
-            cam.release()
             return False
 
+    def _snapshot_dismiss_callback(self, instance):
+        image = np.zeros((600, 600, 3), dtype='uint8')
+        self._show_on_snap_dialog(image)
+        self.__time_out = 0
+        self.__cnt = 0
+        if self._is_rpi:
+            self._picam2.stop_preview()
+            self._picam2.stop()
+        else:
+            self._cv_cam.release()
+
     def open_snapshot_dialog(self):
-        self.snapshot_dialog_content.ids.image.source = os.path.join(os.getcwd(), ".cache", "video_stream.png")
+        self.snapshot_dialog_content.ids.image.source = self._no_face_img_path
+        self.snapshot_dialog_content.ids.image.reload()
         self.snapshot_dialog.content = self.snapshot_dialog_content
+        self.snapshot_dialog.bind(on_dismiss=self._snapshot_dismiss_callback)
         self.snapshot_dialog.open()
         dir_path = os.path.join(os.getcwd(), ".cache", "face_recon")
         self.__save_snapshot_path = os.path.join(dir_path, "_".join([str(x) for x in self.found_user]))
