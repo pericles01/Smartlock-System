@@ -7,17 +7,13 @@
 sudo apt update
 sudo apt install python3 python3-pip
 
-# create & activate a virtual environment for the dependencies
-python3 -m venv Vapp
-source Vapp/bin/activate
-
 # install required dependencies for kivy 
 sudo apt-get -y install build-essential git make autoconf automake libtool \
       pkg-config cmake ninja-build libasound2-dev libpulse-dev libaudio-dev \
       libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev \
       libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev \
       libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
-      libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
+      libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev libcamera-apps
 
 sudo apt-get install xorg wget libxrender-dev lsb-release libraspberrypi-dev raspberrypi-kernel-headers
 sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
@@ -27,9 +23,16 @@ sudo apt install libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev 
 sudo apt-get install -y mtdev-tools
 sudo apt-get install graphicsmagick  libgraphicsmagick1-dev libatlas-base-dev libavcodec-dev libavformat-dev libboost-all-dev  libgtk2.0-dev  libjpeg-d \
       liblapack-dev libswscale-dev  pkg-config gfortran
+sudo apt install -y python3-picamera2
+
+sudo apt install libxcb-cursor0
 
 sudo apt update
 sudo apt upgrade
+
+# create & activate a virtual environment for the dependencies
+python3 -m venv Vapp --system-site-packages
+source Vapp/bin/activate
 
 # The script will download and build the SDL dependencies from source. 
 # It will also install the dependencies into a directory named kivy-dependencies. 
