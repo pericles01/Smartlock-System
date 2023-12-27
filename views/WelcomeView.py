@@ -17,7 +17,10 @@ import json
 import os
 import io
 import cv2
-from picamera2 import Picamera2
+try:
+    from picamera2 import Picamera2
+except ImportError:
+    pass
 import numpy as np
 
 from manage.rpi_face_recon import predict
@@ -206,7 +209,8 @@ class WelcomeScreen(MDFloatLayout):
             self.__time_out += 1
         
     def _common_os_snap(self, _for_qr_code=True):
-        self._cv_cam = cv2.VideoCapture(0)
+        if self._cv_cam is None:
+            self._cv_cam = cv2.VideoCapture(0)
         if self._cv_cam.isOpened():
             result, image = self._cv_cam.read()
             if result:
@@ -312,6 +316,7 @@ class WelcomeScreen(MDFloatLayout):
             self._picam2.stop()
         else:
             self._cv_cam.release()
+            self._cv_cam = None
 
 
     def _on_membership_confirmation_dismiss(self, instance):

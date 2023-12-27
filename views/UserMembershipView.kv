@@ -2,6 +2,47 @@
 #: import UserHomeView views.UserHomeView
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
+
+<ConfidentialityConfirmationContent>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        orientation : "vertical"
+        spacing: dp(10)
+        padding: dp(10)
+        MDScrollView:
+            MDLabel:
+                id: label
+                text : ""
+                font_style : 'H6'
+                halign : "center"
+                size_hint: 1, None
+                height: dp(1100)
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDSeparator:
+
+        MDGridLayout:
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint_y: .1
+            cols: 2
+            spacing: dp(15)
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: yes_button
+                    text: "Yes"
+                    icon: "check"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    #on_release: root.go2snapshot_dialog()
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: no_button
+                    text: "No"
+                    icon: "exit-to-app"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
 <SnapshotDialogContent>:
     MDCard:
         pos_hint : {"center_x":.5,"center_y":.5}
@@ -64,7 +105,7 @@
             size_hint: 1, .6
             theme_icon_color: "Error" #"Custom"
             #icon_color: app.theme_cls.primary_color
-            on_release: root.open_snapshot_dialog()
+            on_release: root.open_confidentiality_confirmation_dialog()
 
 <GenerateQRCodeView>:
     MDFloatLayout:

@@ -2,6 +2,7 @@ import cv2
 import face_recognition
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.utils import get_color_from_hex
 from kivymd.app import MDApp
 from kivymd.color_definitions import colors
@@ -11,12 +12,17 @@ from kivymd.uix.screen import MDScreen
 from manage.Database import Database
 import qrcode
 from random import choice
-import os
 import io
-from picamera2 import Picamera2
+
+try:
+    from picamera2 import Picamera2
+except ImportError:
+    pass
+
 import string
 from manage.rpi_face_recon import *
 from kivy.clock import Clock
+from views.GlobalComponents import ConfirmationDialogContent
 
 class UserMembershipView(MDScreen):
     found_user = ObjectProperty()
@@ -161,6 +167,9 @@ class RegisterFaceReconView(MDScreen):
         self._picam2 = None
         self._cv_cam = None
         self._no_face_img_path = os.path.join(os.getcwd(), ".cache", "video_stream.png")
+        self.confidentiality_confirmation_dialog = Popup(title="Confidentiality confirmation", title_align="center", title_size="20sp",
+                                      size_hint=(0.7, 0.8), auto_dismiss=False)
+        self.confidentiality_confirmation_content = ConfidentialityConfirmationContent()
 
     def on_enter(self, *args):
         if self.found_user:
@@ -193,6 +202,7 @@ class RegisterFaceReconView(MDScreen):
         self._picam2.start(show_preview=False)
         image = self._picam2.capture_array()
         face_locations = face_recognition.face_locations(image)
+        self._show_on_snap_dialog(image)
         if face_locations:
 
             if self.__time_out % 2 == 0: #skip 2 frames/iterations
@@ -214,8 +224,6 @@ class RegisterFaceReconView(MDScreen):
                         if train(path, model_save_path=save_path, n_neighbors=2):
                             print("Training complete!")
                             return False
-        else:
-            self._show_on_snap_dialog(image)
 
         if self.__time_out == 15:
             self.snapshot_dialog.dismiss()
@@ -227,11 +235,13 @@ class RegisterFaceReconView(MDScreen):
             self.__time_out += 1
     
     def _common_os_snap(self):
-        self._cv_cam = cv2.VideoCapture(0)
+        if self._cv_cam is None:
+            self._cv_cam = cv2.VideoCapture(0)
         if self._cv_cam.isOpened():
             result, image = self._cv_cam.read()
             if result:
                 face_locations = face_recognition.face_locations(image)
+                self._show_on_snap_dialog(image)
                 if face_locations:
                     if self.__time_out % 2 == 0:
                         self.__cnt += 1
@@ -252,8 +262,6 @@ class RegisterFaceReconView(MDScreen):
                                 if train(path, model_save_path=save_path, n_neighbors=2):
                                     print("Training complete!")
                                     return False
-                else:
-                    self._show_on_snap_dialog(image)
 
                 if self.__time_out == 15:
                     self.snapshot_dialog.dismiss()
@@ -281,6 +289,7 @@ class RegisterFaceReconView(MDScreen):
             self._picam2.stop()
         else:
             self._cv_cam.release()
+            self._cv_cam = None
 
     def open_snapshot_dialog(self):
         self.snapshot_dialog_content.ids.image.source = self._no_face_img_path
@@ -293,7 +302,52 @@ class RegisterFaceReconView(MDScreen):
         os.makedirs(self.__save_snapshot_path, exist_ok=True)
         Clock.schedule_interval(self.snap_save, 0.2)
 
+    def _go2snapshot_dialog(self, instance):
+        self.confidentiality_confirmation_dialog.dismiss()
+        self.open_snapshot_dialog()
+
+    def open_confidentiality_confirmation_dialog(self):
+
+        self.confidentiality_confirmation_content.ids.label.text = """
+            To enable face ID recognition, we need to store some of your facial images locally on your device. Please read and agree to the following terms and conditions before proceeding.
+            
+            1. Confidentiality and Security
+            
+            We take your privacy very seriously and will only use your facial images for the purpose of face ID recognition. We will not share your facial images with any third parties without your explicit consent. Your facial images will be stored securely on the smartlocker device and will be deleted 
+            if you deactivate this feature later.
+            
+            2. Image Capture
+            
+            To train the face ID recognition model, we need to capture several facial images of you. The images will be used to create a unique facial representation of you. This representation will be used to identify you when you use the face ID recognition feature.
+            
+            3. Image Access
+            
+            You can access and delete your facial images at any time. To do this, go to the settings menu of the app.
+            
+            4. Consent
+            
+            By clicking "Agree," you agree to the terms and conditions set forth above. You also agree to allow us to store and use your facial images for the purpose of face ID recognition.
+            
+            5. Continued Use
+            
+            If you do not agree to the terms and conditions, you will not be able to use the face ID recognition feature.
+            
+            6. Review and Changes
+            
+            We may update these terms and conditions from time to time. You will be notified of any changes by email or through the app. You agree to review these terms and conditions periodically and to be bound by the latest version.
+        """
+        self.confidentiality_confirmation_content.ids.yes_button.text = "I agree"
+        self.confidentiality_confirmation_content.ids.yes_button.bind(on_release=self._go2snapshot_dialog)
+        self.confidentiality_confirmation_content.ids.no_button.text = "I disagree"
+        self.confidentiality_confirmation_content.ids.no_button.bind(on_release=self.confidentiality_confirmation_dialog.dismiss)
+        self.confidentiality_confirmation_dialog.content = self.confidentiality_confirmation_content
+        self.confidentiality_confirmation_dialog.open()
+
 class SnapshotDialogContent(MDFloatLayout):
     def __init__(self, **kwargs):
         super(SnapshotDialogContent, self).__init__(**kwargs)
+
+class ConfidentialityConfirmationContent(RelativeLayout):
+    def __init__(self, **kwargs):
+        super(ConfidentialityConfirmationContent, self).__init__(**kwargs)
 
