@@ -11,7 +11,7 @@ import os
 from kivy.clock import Clock
 from functools import partial
 import serial
-#from gpiozero import Buzzer
+from gpiozero import Buzzer
 
 class SetupView(MDScreen):
     isSetup = BooleanProperty()
@@ -30,7 +30,7 @@ class SetupView(MDScreen):
         self._is_all_doors_opened = False
         self._door_position = 1
         self._hub = SerialHub()
-        self._buzzer = None #Buzzer(18)
+        self._buzzer = Buzzer(18)
 
     def on_pre_enter(self, *args):
         try:
@@ -43,7 +43,6 @@ class SetupView(MDScreen):
 
         except serial.SerialException as e:
             self.ids.locker_number_label.text = "0"
-
 
 
     def _on_dismiss_callback(self, instance):
@@ -65,6 +64,7 @@ class SetupView(MDScreen):
 
         door_number = str(self.start_number + self._cnt)
         self.ids.technician_label.text ="Please close door number: " + door_number
+        self._buzzer.off()
 
         if self._door_info_pos != _hub.send_status_command(): # by status change
             # door closed
@@ -77,7 +77,7 @@ class SetupView(MDScreen):
                         self._skip_door_pos.append(k)
                         self._cnt += 1
                         self._buzzer.on()
-                        
+                            
                         if self._cnt == self._number_connected_door:
                             # save the mapping dict for future use
                             path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")
@@ -87,8 +87,9 @@ class SetupView(MDScreen):
                             self.ids.technician_label.text ="Setup finished"
                             self._open_alert_dialog(text = "Setup finished")
                             self.ids.start_number_field.text = ""
+                            self._buzzer.off()
                             return False
-                        self._buzzer.off()
+                        
 
     def _open_door_clock(self, *args):
         try:
@@ -150,9 +151,6 @@ class SetupView(MDScreen):
                 #self.test_setup()
             except ValueError:
                 self._open_alert_dialog(text="Start number must be an integer")
-
-
-
 
 
 class OkDialogContent(FloatLayout):
