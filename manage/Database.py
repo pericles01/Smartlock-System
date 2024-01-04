@@ -150,9 +150,13 @@ class Database:
         :param pin: input pin
         :return: list a user infos if found or None
         """
-        command = "SELECT firstname, lastname, door_number FROM users WHERE pin_code=?"
-        res = self.__cursor.execute(command, pin)
-        return res.fetchall()
+        command = f"SELECT firstname, lastname, door_number FROM users WHERE pin_code={pin}"
+        res = self.__cursor.execute(command).fetchall()
+        print(res)
+        if len(res) > 0:
+            return res[0]
+        else:
+            return None
 
     def get_user_by_rfid(self, rfid:int) -> tuple|None:
         """

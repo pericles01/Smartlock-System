@@ -1,121 +1,5 @@
-#: import GlobalComponents views.GlobalComponents
-
-<SnapshotDialogContent>:
-    MDCard:
-        pos_hint : {"center_x":.5,"center_y":.5}
-        md_bg_color : CardBackgroundColor
-        orientation : "vertical"
-        spacing: dp(10)
-        padding: dp(10)
-        MDLabel:
-            id: label
-            #text : root.label_text
-            font_style : 'H5'
-            halign : "center"
-            size_hint_y: None
-            height: self.texture_size[1]
-            pos_hint: {"center_x": .5, "center_y": .5}
-            theme_text_color: "Error"
-
-        MDSeparator:
-
-        FitImage:
-            id: image
-            #size_hint_y: .7
-            pos_hint: {"center_x": .5, "center_y": .5}
-            radius: 25, 25, 25, 25
-
-<MembershipConfirmationContent>:
-    MDCard:
-        pos_hint : {"center_x":.5,"center_y":.5}
-        md_bg_color : CardBackgroundColor
-        orientation : "vertical"
-        spacing: dp(10)
-        padding: dp(10)
-        MDLabel:
-            id: label
-            text : ""
-            font_style : 'H5'
-            halign : "center"
-            pos_hint: {"center_x": .5, "center_y": .5}
-
-        MDSeparator:
-
-        MDGridLayout:
-            pos_hint: {"center_x": .5, "center_y": .5}
-            #size_hint_y: .3
-            cols: 2
-            spacing: dp(15)
-
-            MDRelativeLayout:
-                MDFillRoundFlatIconButton:
-                    id: yes_button
-                    text: "Yes"
-                    icon: "check"
-                    pos_hint: {"center_x": .5, "center_y": .5}
-                    on_press: root.go2membership(app.manager)
-
-            MDRelativeLayout:
-                MDFillRoundFlatIconButton:
-                    id: no_button
-                    text: "No"
-                    icon: "exit-to-app"
-                    pos_hint: {"center_x": .5, "center_y": .5}
-
-
-<PinDialogContent>:
-    MDCard:
-        pos_hint : {"center_x":.5,"center_y":.5}
-        md_bg_color : CardBackgroundColor
-        spacing: dp(10)
-        padding: dp(10)
-        orientation : "vertical"
-
-        MDRelativeLayout:
-            size_hint_x: .6
-            pos_hint: {"center_x": .5, "center_y": .5}
-            MDBoxLayout:
-                orientation: "vertical"
-                spacing: dp(10)
-                MDLabel:
-                    text : 'Please enter your PIN'
-                    font_style : 'H6'
-                    halign : "center"
-                    pos_hint: {"center_x": .5, "center_y": .5}
-                ClickableTextFieldRound:
-                    id: user_pin_login
-
-        MDSeparator:
-
-        MDGridLayout:
-            pos_hint: {"center_x": .5, "center_y": .5}
-            cols: 2
-            spacing: dp(15)
-            size_hint_y: .4
-
-            MDRelativeLayout:
-                MDFillRoundFlatIconButton:
-                    id: login_button
-                    text: "Login"
-                    icon: "account"
-                    pos_hint: {"center_x": .5, "center_y": .5}
-
-            MDRelativeLayout:
-                MDFillRoundFlatIconButton:
-                    id: exit_button
-                    text: "Exit"
-                    icon: "exit-to-app"
-                    pos_hint: {"center_x": .5, "center_y": .5}
-
-        MDLabel:
-            id: error_label
-            font_style : 'Subtitle2'
-            text: "* required field"
-            halign : "center"
-            size_hint_y: None
-            height: dp(15)
-            pos_hint: {"center_x": .5, "center_y": .5}
-            theme_text_color: "Error"
+#: set backgroundColor "8D6E63"
+#: set CardBackgroundColor [35/255,49/255,48/255,1]
 
 
 <LoginOptionCard>:
@@ -146,59 +30,124 @@
         pos_hint: {"center_x": .5, "center_y": .5}
         bold: True
 
-<WelcomeScreen>:
+<ClickableTextFieldRound@MDRelativeLayout>:
+    size_hint_y: None
+    height: password_field.height
+    MDTextField:
+        id: password_field
+        hint_text : "password *"
+        max_text_length: 10
+        multiline: False
+        mode: "round"
+        password : True
+        icon_left: "key-variant"
+        size_hint_x : None
+        width : 220
+        pos_hint : {"center_x":.5}
+
+    MDIconButton:
+        icon: "eye-off"
+        pos_hint: {"center_x": .8,"center_y": .5}
+        theme_text_color: "Hint"
+        on_release:
+            self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+            password_field.password = False if password_field.password is True else True
+
+<WelcomeView>:
     BoxLayout:
         orientation: "vertical"
         AnchorLayout:
-            size_hint_y: .2
+            size_hint_y: None
+            height: dp(40)
             anchor_x: "right"
             anchor_y: "top"
             padding: dp(15)
 
             MDFillRoundFlatIconButton:
-                #md_bg_color: app.theme_cls.primary_dark #"4FC3F7"
                 icon: "login"
                 text: "Login Admin"
                 on_press: app.manager.push("login_admin")
 
-        BoxLayout:
-            size_hint_y: .2
-            Label:
-                text: "Welcome!"
-                size: self.texture_size
-                pos_hint_x: .5
-                font_size: dp(30)
-                bold: True
+        MDLabel:
+            text : "Welcome!"
+            font_style : 'H5'
+            halign : "center"
+            size_hint_y: None
+            height: dp(40)
+            pos_hint: {"center_x": .5, "center_y": .5}
 
-        GridLayout:
-            rows: 2
-            cols: 2
-            padding: dp(50), dp(20), dp(50), dp(50),
+        RelativeLayout:
+            MDCard:
+                pos_hint : {"center_x":.5,"center_y":.5}
+                md_bg_color : CardBackgroundColor
+                orientation : "vertical"
+                spacing: dp(10)
+                padding: dp(10)
+                size_hint: .5, .9
+                elevation: 4
+                shadow_offset: (0, 1)
 
-            MDFloatLayout:
-                LoginOptionCard:
-                    id: rfid_login
-                    icon_name: "account-card"
-                    text_option: "Login with RFID"
-                    press_callback: root.show_dialog
+                MDRelativeLayout:
+                    pos_hint : {"center_x":.5,"center_y":.5}
+                    size_hint: .7, .3
+                    ClickableTextFieldRound:
+                        id: pin_field
+                        pos_hint : {"center_x":.5,"center_y":.5}
 
-            MDFloatLayout:
-                LoginOptionCard:
-                    id: pin_login
-                    icon_name: "numeric"
-                    text_option: "Login with PIN"
-                    press_callback: root.show_dialog
+                MDGridLayout:
+                    id: numpad
+                    cols: 3
+                    rows: 4
+                    spacing: dp(5)
 
-            MDFloatLayout:
-                LoginOptionCard:
-                    id: qrcode_login
-                    icon_name: "qrcode-scan"
-                    text_option: "Login with QR Code"
-                    press_callback: root.show_dialog
+                MDLabel:
+                    id: error_label
+                    font_style : 'Subtitle2'
+                    text: "* required field"
+                    halign : "center"
+                    size_hint_y: None
+                    height: dp(15)
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    theme_text_color: "Error"
 
-            MDFloatLayout:
-                LoginOptionCard:
-                    id: face_recon_login
-                    icon_name: "face-recognition"
-                    text_option: "Login with Face Recognition"
-                    press_callback: root.show_dialog
+                MDRelativeLayout:
+                    pos_hint : {"center_x":.5,"center_y":.5}
+                    size_hint: .8, .2
+                    BoxLayout:
+                        spacing: dp(5)
+                        CheckBox:
+                            id: go2membership
+                            pos_hint : {"center_x":.5,"center_y":.5}
+                            size_hint_x: .1
+
+                        MDLabel:
+                            text : "Go to membership"
+                            font_style : 'Subtitle1'
+                            halign : "left"
+
+                        MDFillRoundFlatIconButton:
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                            text: "Login"
+                            icon: "login"
+                            on_release:
+                                root.verify_input_pin(app.manager)
+
+        MDRelativeLayout:
+            pos_hint : {"center_x":.5,"center_y":.5}
+            size_hint: .7, .4
+            BoxLayout:
+                spacing: dp(5)
+                MDFloatLayout:
+                    LoginOptionCard:
+                        id: face_recon_login
+                        icon_name: "face-recognition"
+                        text_option: "Login with Face Recognition"
+                        press_callback: root.show_dialog
+
+                MDFloatLayout:
+                    LoginOptionCard:
+                        id: qrcode_login
+                        icon_name: "qrcode-scan"
+                        text_option: "Login with QR Code"
+                        press_callback: root.show_dialog
+

@@ -54,6 +54,7 @@ pip3 install pyserial pandas
 pip3 install qrcode
 pip3 install opencv-python dlib face_recognition
 pip3 install scikit-learn
+pip3 install gpiozero
 
 # enable hardware acceleration
 sudo adduser "$USER" render

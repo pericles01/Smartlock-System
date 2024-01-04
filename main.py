@@ -1,15 +1,12 @@
 import sys
-
+from kivy.uix.button import Button
 from kivy.utils import get_color_from_hex
 from kivymd.app import MDApp
 from kivymd.color_definitions import colors
 from kivymd.toast import toast
 from kivymd.uix.screenmanager import MDScreenManager
-from kivy.properties import ObjectProperty, NumericProperty
-#import cProfile
+from kivy.properties import ObjectProperty
 from manage.SerialHub import SerialHub
-from manage.Database import Database
-from views.AdminMembershipView import AdminMembershipView
 import serial
 
 class NavigationScreenManager(MDScreenManager):
@@ -52,23 +49,29 @@ class SmartlockApp(MDApp):
         return self.manager
 
     def on_start(self):
-        #self.profile = cProfile.Profile()
-        #self.profile.enable()
-        cnt = 0
         hub = SerialHub()
 
         try:
-            door_pos_info = hub.send_status_command()
+            _ = hub.send_status_command()
         except (serial.SerialException, ValueError) as e:
             print(e)
             print("Please make sure that the Hub device is connected correctly")
             #print("Exiting...")
             #sys.exit(1)
 
+        self.root.ids.welcome_view.ids.pin_field.ids.password_field.hint_text = "Enter your PIN"
+        for i in range(1, 10):
+            btn = Button(text=f"{i}")
+            btn.bind(on_release=self.root.ids.welcome_view.on_release_num_btn_callback)
+            self.root.ids.welcome_view.ids.numpad.add_widget(btn)
 
-    #def on_stop(self):
-        #self.profile.disable()
-        #self.profile.dump_stats('SmartlockApp.profile')
+        zero_btn = Button(text=str(0))
+        zero_btn.bind(on_release=self.root.ids.welcome_view.on_release_num_btn_callback)
+        self.root.ids.welcome_view.ids.numpad.add_widget(zero_btn)
+
+        del_btn = Button(text="Del")
+        del_btn.bind(on_release=self.root.ids.welcome_view.on_release_del_btn_callback)
+        self.root.ids.welcome_view.ids.numpad.add_widget(del_btn)
 
 
 

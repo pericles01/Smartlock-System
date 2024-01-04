@@ -10,8 +10,8 @@ from manage.SerialHub import SerialHub
 import os
 from kivy.clock import Clock
 from functools import partial
-import  serial
-import random
+import serial
+#from gpiozero import Buzzer
 
 class SetupView(MDScreen):
     isSetup = BooleanProperty()
@@ -30,6 +30,7 @@ class SetupView(MDScreen):
         self._is_all_doors_opened = False
         self._door_position = 1
         self._hub = SerialHub()
+        self._buzzer = None #Buzzer(18)
 
     def on_pre_enter(self, *args):
         try:
@@ -75,7 +76,7 @@ class SetupView(MDScreen):
                         self._num2pos[door_number] = int(k)
                         self._skip_door_pos.append(k)
                         self._cnt += 1
-                        #ToDo: Buffer Beep
+                        self._buzzer.on()
                         
                         if self._cnt == self._number_connected_door:
                             # save the mapping dict for future use
@@ -87,6 +88,7 @@ class SetupView(MDScreen):
                             self._open_alert_dialog(text = "Setup finished")
                             self.ids.start_number_field.text = ""
                             return False
+                        self._buzzer.off()
 
     def _open_door_clock(self, *args):
         try:
