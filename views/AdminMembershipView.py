@@ -81,8 +81,8 @@ class AdminMembershipView(MDScreen):
         self.show_user_info_dialog(instance)
 
     def file_manager_open(self):
-        self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
-        #self.file_manager.show_disks()
+        #self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
+        self.file_manager.show_disks()
         self.manager_open = True
 
     def select_path(self, path: str):

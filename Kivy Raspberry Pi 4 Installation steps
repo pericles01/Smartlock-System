@@ -58,9 +58,3 @@ pip3 install gpiozero
 
 # enable hardware acceleration
 sudo adduser "$USER" render
-
-# If a touchscreen is used, edit the file ~/.kivy/config.ini and go to the [input] section. 
-# Add this:
-mouse = mouse
-mtdev_%(name)s = probesysfs,provider=mtdev
-hid_%(name)s = probesysfs,provider=hidinput

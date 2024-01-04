@@ -187,8 +187,8 @@
             MDRelativeLayout:
                 size_hint_x: .6
                 pos_hint: {"center_x": .5, "center_y": .5}
-                MDGridLayout:
-                    rows: 2
+                MDBoxLayout:
+                    orientation: "vertical"
                     spacing: dp(10)
                     MDLabel:
                         text : 'Set new PIN'
@@ -197,9 +197,12 @@
                         size_hint_x: .7
                         pos_hint: {"center_x": .5, "center_y": .5}
 
-                    ClickableTextFieldRound:
-                        id: new_pin
-                        pos_hint: {"center_x": .5, "center_y": .5}
+                    MDRelativeLayout:
+                        pos_hint : {"center_x":.5,"center_y":.5}
+                        size_hint_x: .8
+                        ClickableTextFieldRound:
+                            id: new_pin
+                            pos_hint: {"center_x": .5, "center_y": .5}
 
             MDSeparator:
 
@@ -216,9 +219,12 @@
                         size_hint_x: .7
                         pos_hint: {"center_x": .5, "center_y": .5}
 
-                    ClickableTextFieldRound:
-                        id: confirm_pin
-                        pos_hint: {"center_x": .5, "center_y": .5}
+                    MDRelativeLayout:
+                        pos_hint : {"center_x":.5,"center_y":.5}
+                        size_hint_x: .8
+                        ClickableTextFieldRound:
+                            id: confirm_pin
+                            pos_hint: {"center_x": .5, "center_y": .5}
 
             MDSeparator:
 
