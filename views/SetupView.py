@@ -11,7 +11,20 @@ import os
 from kivy.clock import Clock
 from functools import partial
 import serial
-from gpiozero import Buzzer
+try:
+    from gpiozero import Buzzer
+except ImportError:
+    pass
+
+
+class Buzzer():
+    def __init__(self, port):
+        self._port = port
+
+    def on(self):
+        pass
+    def off(self):
+        pass
 
 class SetupView(MDScreen):
     isSetup = BooleanProperty()

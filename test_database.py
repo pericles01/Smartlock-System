@@ -38,8 +38,12 @@ if __name__ == '__main__':
     print("Content:")
     print(f"{content}")
 
-    rfid = 7895
+    rfid = "CBD4974A"
     user = db.get_user_by_rfid(rfid)
+    print(f"User: {user}")
+
+    pin = 1234
+    user = db.get_user_by_pin(pin)
     print(f"User: {user}")
 
 

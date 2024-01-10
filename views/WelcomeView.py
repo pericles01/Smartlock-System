@@ -52,6 +52,29 @@ class WelcomeView(MDScreen):
         self._is_rpi = self.is_raspberrypi()
         self._picam2 = None
         self._cv_cam = None
+        self._cnt = int()
+
+    def _on_focus(self, instance, value):
+        if value:
+            pass
+            #print('User focused', instance)
+            #self.ids.pin_field.ids.password_field.hide_keyboard()
+        else:
+            #print('User defocused', instance)
+            pass
+
+    def _on_text_validate(self, instance):
+        uid = instance.text.strip()
+        print(f"Text: {uid} validated")
+        self.ids.pin_field.ids.password_field.text = ""
+        self.ids.pin_field.ids.password_field.focus = True
+        self.login_rfid(uid)
+
+    def on_pre_enter(self, *args):
+        self._db.db_init(refresh=True)
+        self.ids.pin_field.ids.password_field.focus = True
+        self.ids.error_label.text = "* required field"
+        self.ids.pin_field.ids.password_field.bind(focus=self._on_focus, on_text_validate=self._on_text_validate)
 
     def on_release_num_btn_callback(self, instance):
         old_pin_text = self.ids.pin_field.ids.password_field.text
@@ -76,41 +99,80 @@ class WelcomeView(MDScreen):
             pass
         return False
 
-    def show_dialog(self, instance: str):
-        if instance.text_option == "Login with PIN":
-            self.pin_dialog_content.ids.login_button.bind(on_press=self._verify_input_pin)
-            self.pin_dialog_content.ids.user_pin_login.ids.password_field.bind(on_text_validate=self._verify_input_pin)
-            self.pin_dialog_content.ids.exit_button.bind(on_press=self.pin_dialog.dismiss)
-            self.pin_dialog.content = self.pin_dialog_content
-            self.pin_dialog.bind(on_dismiss=self.pin_dialog_dismiss_callback)
-            self.pin_dialog.open()
+    def _refresh_welcome_screen(self, *args):
+        self.ids.pin_field.ids.password_field.focus = True
 
-        elif instance.text_option == "Login with RFID":
-            print(f"{str(instance.icon_name)}")
-            # user = db.get_user_by_rfid(rfid)
+    def login_rfid(self, rfid_code):
+        user = self._db.get_user_by_rfid(rfid_code)
+        if user:
+            self.found_user = user
+            # retrive door_number
+            door_number = self.found_user[2]
+            if self.ids.go2membership.active:
+                MDApp.get_running_app().found_user = self.found_user
+                MDApp.get_running_app().manager.push("user_membership")
+                # change screen
+                toast(f"Successfully login into your membership",
+                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                      )
+            else:
+                self._open_door_callback(door_number)
+                Clock.schedule_once(self._refresh_welcome_screen, 3)
 
-            print("------------")
-        elif instance.text_option == "Login with QR Code":
-            self.snapshot_dialog_content.ids.label.text = "Please place your QR Code on the camera"
+        else:
+            toast(f"User not found, please try again!!",
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=2)
 
-            self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
-            self.snapshot_dialog_content.ids.image.reload()
-            self._db.db_init(refresh=True)
-            Clock.schedule_interval(partial(self.snap_save, True), 0.2)  # 5 fps
-            self.snapshot_dialog.content = self.snapshot_dialog_content
-            self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
-            self.snapshot_dialog.open()
+    def login_pin(self):
+        if self.ids.pin_field.ids.password_field.text.strip():
+            try:
+                pin = int(self.ids.pin_field.ids.password_field.text.strip())
+                # search PIN in the database
+                user = self._db.get_user_by_pin(pin)
 
-        else:  # Face ID
-            self.snapshot_dialog_content.ids.label.text = "Please place your Face at the camera"
+                if user:
+                    self.found_user = user
+                    # retrive door_number
+                    door_number = self.found_user[2]
+                    if self.ids.go2membership.active:
+                        MDApp.get_running_app().found_user = self.found_user
+                        MDApp.get_running_app().manager.push("user_membership")
+                        # change screen
+                        toast(f"Successfully login into your membership",
+                              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                              )
+                    else:
+                        self._open_door_callback(door_number)
+                        Clock.schedule_once(self._refresh_welcome_screen, 3)
+                else:
+                    self.ids.error_label.text = "User not found, please verify your PIN input"
+                    toast(f"User not found, please try again!!",
+                          background=get_color_from_hex(colors["Red"]["500"]), duration=2)
+                self.ids.pin_field.ids.password_field.text = ""
+            except ValueError as e:
+                self.ids.error_label.text = "PIN must be a numeric number"
+                print(e)
+        else:
+            self.ids.error_label.text = "Please enter your numeric PIN"
+    def login_qr_code(self):
+        self.snapshot_dialog_content.ids.label.text = "Please place your QR Code on the camera"
 
-            self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
-            self.snapshot_dialog_content.ids.image.reload()
-            self._db.db_init(refresh=True)
-            Clock.schedule_interval(partial(self.snap_save, False), 0.2)  # 5 fps
-            self.snapshot_dialog.content = self.snapshot_dialog_content
-            self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
-            self.snapshot_dialog.open()
+        self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
+        self.snapshot_dialog_content.ids.image.reload()
+        self.snapshot_dialog.content = self.snapshot_dialog_content
+        self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
+        self.snapshot_dialog.open()
+        Clock.schedule_interval(partial(self.snap_save, True), 0.2)  # 5 fps
+
+    def login_face_id(self):
+        self.snapshot_dialog_content.ids.label.text = "Please place your Face at the camera"
+
+        self.snapshot_dialog_content.ids.image.source = self.__save_snapshot_path
+        self.snapshot_dialog_content.ids.image.reload()
+        self.snapshot_dialog.content = self.snapshot_dialog_content
+        self.snapshot_dialog.bind(on_dismiss=self._snapshot_dialog_dismiss_callback)
+        self.snapshot_dialog.open()
+        Clock.schedule_interval(partial(self.snap_save, False), 0.2)  # 5 fps
 
     def snap_save(self, for_qr_code=True, *args):
         if self._is_rpi:
@@ -155,16 +217,21 @@ class WelcomeView(MDScreen):
 
                     if self._db.is_in_db(self.found_user):
                         toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
-                              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
-                        self.show_go_to_membership_dialog()
+                              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2)
+
+                        if self.ids.go2membership.active:
+                            self.show_go_to_membership_dialog()
+                        else:
+                            self._open_door_callback(self.found_user[2])
+                            Clock.schedule_once(self._refresh_welcome_screen, 3)
                     else:
                         toast(f"User not found, please try again!!",
-                              background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                              background=get_color_from_hex(colors["Red"]["500"]), duration=2)
                         self.found_user = None
                 except Exception as e:
                     print(e)
                     toast(f"User not found, please try again!!",
-                          background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                          background=get_color_from_hex(colors["Red"]["500"]), duration=2)
                     self.found_user = None
 
                 return False
@@ -189,19 +256,24 @@ class WelcomeView(MDScreen):
                         self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
                         if self._db.is_in_db(self.found_user):
                             toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
-                                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+                                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2)
 
-                            self.show_go_to_membership_dialog()
+                            if self.ids.go2membership.active:
+                                self.show_go_to_membership_dialog()
+                            else:
+                                self._open_door_callback(self.found_user[2])
+                                Clock.schedule_once(self._refresh_welcome_screen, 3)
                         else:
                             toast(f"User not found, please try again!!",
-                                  background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                                  background=get_color_from_hex(colors["Red"]["500"]), duration=2)
                             self.found_user = None
 
                     except Exception as e:
                         print(e)
                         self.found_user = None
                         toast(f"User not found, please try again!!",
-                              background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                              background=get_color_from_hex(colors["Red"]["500"]), duration=2)
+                        Clock.schedule_once(self._refresh_welcome_screen, 3)
 
                 return False
 
@@ -209,8 +281,9 @@ class WelcomeView(MDScreen):
 
             self.snapshot_dialog.dismiss()
             toast(f"Timeout reached! No user found, please try again!!",
-                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=2
                   )
+            Clock.schedule_once(self._refresh_welcome_screen, 3)
             return False
         else:
             self.__time_out += 1
@@ -241,24 +314,30 @@ class WelcomeView(MDScreen):
                     if self.found_user is not None:
                         self.snapshot_dialog.dismiss()
                         try:
-                            self.found_user = self.found_user.split("|")
+                            self.found_user = self.found_user.split("'")
                             self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
 
                             if self._db.is_in_db(self.found_user):
                                 toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
-                                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
-                                self.show_go_to_membership_dialog()
+                                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2)
+                                if self.ids.go2membership.active:
+                                    self.show_go_to_membership_dialog()
+                                else:
+                                    self._open_door_callback(self.found_user[2])
+                                    Clock.schedule_once(self._refresh_welcome_screen, 3)
                             else:
                                 toast(f"User not found, please try again!!",
-                                      background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                                      background=get_color_from_hex(colors["Red"]["500"]), duration=2)
                                 self.found_user = None
                         except Exception as e:
                             print(e)
                             toast(f"User not found, please try again!!",
-                                  background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                                  background=get_color_from_hex(colors["Red"]["500"]), duration=2)
                             self.found_user = None
+                            Clock.schedule_once(self._refresh_welcome_screen, 3)
 
                         return False
+
                 else:  # for face_id
                     cv2.imwrite(self.__save_snapshot_path, image)
                     self.snapshot_dialog_content.ids.image.reload()
@@ -278,19 +357,24 @@ class WelcomeView(MDScreen):
                                 self.found_user = [self.found_user[0], self.found_user[1], int(self.found_user[2])]
                                 if self._db.is_in_db(self.found_user):
                                     toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
-                                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=5)
+                                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2)
 
-                                    self.show_go_to_membership_dialog()
+                                    if self.ids.go2membership.active:
+                                        self.show_go_to_membership_dialog()
+                                    else:
+                                        self._open_door_callback(self.found_user[2])
+                                        Clock.schedule_once(self._refresh_welcome_screen, 3)
                                 else:
                                     toast(f"User not found, please try again!!",
-                                          background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                                          background=get_color_from_hex(colors["Red"]["500"]), duration=2)
                                     self.found_user = None
 
                             except Exception as e:
                                 print(e)
                                 self.found_user = None
                                 toast(f"User not found, please try again!!",
-                                      background=get_color_from_hex(colors["Red"]["500"]), duration=5)
+                                      background=get_color_from_hex(colors["Red"]["500"]), duration=2)
+                                Clock.schedule_once(self._refresh_welcome_screen, 3)
 
                         return False
 
@@ -298,8 +382,9 @@ class WelcomeView(MDScreen):
 
                 self.snapshot_dialog.dismiss()
                 toast(f"Timeout reached! No user found, please try again!!",
-                      background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                      background=get_color_from_hex(colors["Red"]["500"]), duration=2
                       )
+                Clock.schedule_once(self._refresh_welcome_screen, 3)
 
                 return False
             else:
@@ -307,9 +392,10 @@ class WelcomeView(MDScreen):
 
         else:
             toast(f"Error while opening the camera, please try again!!",
-                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=2
                   )
             self.snapshot_dialog.dismiss()
+            Clock.schedule_once(self._refresh_welcome_screen, 3)
             return False
 
     def _snapshot_dialog_dismiss_callback(self, instance):
@@ -338,55 +424,24 @@ class WelcomeView(MDScreen):
             status = doors_status[str(door_pos)]
             if status == "open":
                 toast(f"Door is already open",
-                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2
                       )
             else:
                 if hub.send_open_command(door_pos):
                     # ToDo buffer peep
                     toast(f"Door opened",
-                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2
                           )
                 # make sure the status changed
                 if doors_status == hub.send_status_command():
                     toast(f"Could not open the door, try again",
-                          background=get_color_from_hex(colors["Red"]["500"]), duration=3
+                          background=get_color_from_hex(colors["Red"]["500"]), duration=2
                           )
 
         except (serial.SerialException, ValueError) as e:
             toast("Could not open the door. Please make sure that the Hub device is connected correctly and try again",
-                  background=get_color_from_hex(colors["Red"]["500"]), duration=5
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=2
                   )
-
-    def verify_input_pin(self, manager):
-        if self.ids.pin_field.ids.password_field.text.strip():
-            try:
-                pin = int(self.ids.pin_field.ids.password_field.text.strip())
-                # search PIN in the database
-                self._db.db_init(refresh=True)
-                user = self._db.get_user_by_rfid(pin)
-
-                if user:
-                    self.found_user = user
-                    # retrive door_number
-                    door_number = self.found_user[2]
-                    if self.ids.go2membership.active:
-                        MDApp.get_running_app().found_user = self.found_user
-                        manager.push("user_membership")
-                        # change screen
-                        toast(f"Successfully login into your membership",
-                              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
-                              )
-                    else:
-                        self._open_door_callback(door_number)
-                else:
-                    self.ids.error_label.text = "User not found, please verify your PIN input"
-
-                self.ids.pin_field.ids.password_field.text = ""
-            except ValueError as e:
-                self.ids.error_label.text = "PIN must be a numeric number"
-                print(e)
-        else:
-            self.ids.error_label.text = "Please enter your numeric PIN"
 
 
 class SnapshotDialogContent(RelativeLayout):

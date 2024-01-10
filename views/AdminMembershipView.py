@@ -53,7 +53,6 @@ class AdminMembershipView(MDScreen):
         self._hub = SerialHub()
         self.__time_out = int()
         self._db = Database()
-        self._db.db_init()
 
     def on_pre_enter(self, *args):
         """
@@ -61,6 +60,7 @@ class AdminMembershipView(MDScreen):
         :param args:
         :return:
         """
+        self._db.db_init(refresh=True)
         db_content = self._db.show_users_table()
         if db_content:
             self.user_data = db_content
@@ -158,7 +158,7 @@ class AdminMembershipView(MDScreen):
             try:
                 firstname = self.userform_content.ids.firstname_field.text.strip()
                 lastname = self.userform_content.ids.lastname_field.text.strip()
-                rfid_code = int(self.userform_content.ids.rfid_field.text.strip())
+                rfid_code = self.userform_content.ids.rfid_field.text.strip()
                 door_number = int(self.userform_content.ids.door_number_field.text.strip())
                 user_description = self.userform_content.ids.description_field.text.strip() if self.userform_content.ids.description_field.text.strip() != "" else "No Description"
                 toast(f"Successfully added user {firstname}, {lastname}",
@@ -188,7 +188,7 @@ class AdminMembershipView(MDScreen):
                     print(f"{self.user_data}")
                     self.userform_dialog.dismiss()
             except ValueError:
-                self.userform_content.ids.error_label.text = "RFID Code and door number must be a numeric number"
+                self.userform_content.ids.error_label.text = "Door number must be a numeric number"
 
     def _verify_input_user_info_callback(self, instance):
         if not (self.user_info_content.ids.firstname_field.text.strip() and self.user_info_content.ids.lastname_field.text.strip()
