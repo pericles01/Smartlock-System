@@ -57,31 +57,16 @@ class WelcomeView(MDScreen):
     def _on_text_validate(self, instance):
         uid = instance.text.strip()
         print(f"Text: {uid} validated")
-        self.ids.pin_field.ids.password_field.text = ""
-        self.ids.pin_field.ids.password_field.focus = True
+        self.ids.password_field.ids.password_field.text = ""
+        self.ids.password_field.ids.password_field.focus = True
         self.login_rfid(uid)
 
     def on_pre_enter(self, *args):
         self._db.db_init(refresh=True)
-        self.ids.pin_field.ids.password_field.focus = True
+        self.ids.password_field.ids.password_field.focus = True
         self.ids.error_label.text = "* required field"
-        self.ids.pin_field.ids.password_field.bind(on_text_validate=self._on_text_validate)
+        self.ids.password_field.ids.password_field.bind(on_text_validate=self._on_text_validate)
         self.ids.go2membership.active = False
-
-    def on_release_num_btn_callback(self, instance):
-        old_pin_text = self.ids.pin_field.ids.password_field.text
-        self.ids.pin_field.ids.password_field.text = old_pin_text + instance.text
-
-    def on_release_del_btn_callback(self, instance):
-        old_pin_text = self.ids.pin_field.ids.password_field.text
-        if len(old_pin_text) > 0:
-            self.ids.pin_field.ids.password_field.text = old_pin_text[:-1]
-
-    def on_release_login_btn_callback(self):
-        if self.ids.go2membership.active:
-            print("Log in into membership...")
-        else:
-            print("Opening door...")
 
     def is_raspberrypi(self):
         try:
@@ -92,7 +77,7 @@ class WelcomeView(MDScreen):
         return False
 
     def _refresh_welcome_screen(self, *args):
-        self.ids.pin_field.ids.password_field.focus = True
+        self.ids.password_field.ids.password_field.focus = True
         self.ids.go2membership.active = False
 
     def _go2user_membership(self):
@@ -120,37 +105,34 @@ class WelcomeView(MDScreen):
                   background=get_color_from_hex(colors["Red"]["500"]), duration=2)
             Clock.schedule_once(self._refresh_welcome_screen, 3)
 
-    def login_pin(self):
+    def login_password(self):
         # reset
         self.found_user = None
 
-        if self.ids.pin_field.ids.password_field.text.strip():
-            try:
-                pin = int(self.ids.pin_field.ids.password_field.text.strip())
-                # search PIN in the database
-                user = self._db.get_user_by_pin(pin)
+        if self.ids.password_field.ids.password_field.text.strip():
 
-                if user:
-                    self.found_user = user
-                    if self.ids.go2membership.active:
-                        self._go2user_membership()
-                        toast(f"Successfully login into your membership",
-                              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
-                              )
-                    else:
-                        self._open_door_callback(self.found_user[2])
-                        Clock.schedule_once(self._refresh_welcome_screen, 3)
+            password = self.ids.password_field.ids.password_field.text.strip()
+            # search password in the database
+            user = self._db.get_user_by_password(password)
+
+            if user:
+                self.found_user = user
+                if self.ids.go2membership.active:
+                    self._go2user_membership()
+                    toast(f"Successfully login into your membership",
+                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                          )
                 else:
-                    self.ids.error_label.text = "User not found, please verify your PIN input"
-                    toast(f"User not found, please try again!!",
-                          background=get_color_from_hex(colors["Red"]["500"]), duration=2)
+                    self._open_door_callback(self.found_user[2])
                     Clock.schedule_once(self._refresh_welcome_screen, 3)
-                self.ids.pin_field.ids.password_field.text = ""
-            except ValueError as e:
-                self.ids.error_label.text = "PIN must be a numeric number"
-                print(e)
+            else:
+                self.ids.error_label.text = "User not found, please verify your password input"
+                toast(f"User not found, please try again!!",
+                      background=get_color_from_hex(colors["Red"]["500"]), duration=2)
+                Clock.schedule_once(self._refresh_welcome_screen, 3)
+            self.ids.password_field.ids.password_field.text = ""
         else:
-            self.ids.error_label.text = "Please enter your numeric PIN"
+            self.ids.error_label.text = "Please enter your numeric password"
 
     def login_qr_code_reader(self, reader_data:str):
         # reset
@@ -252,7 +234,7 @@ class WelcomeView(MDScreen):
                     found_user = [found_user[0], found_user[1], int(found_user[2])]
 
                     if self._db.is_in_db(found_user):
-                        toast(f"Successfully found User: {self.found_user[0]}, {self.found_user[1]}",
+                        toast(f"Successfully found User: {found_user[0]}, {found_user[1]}",
                               background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2)
                         self.found_user = found_user
 
@@ -476,7 +458,6 @@ class WelcomeView(MDScreen):
                       )
             else:
                 if hub.send_open_command(door_pos):
-                    # ToDo buffer peep
                     toast(f"Door opened",
                           background=get_color_from_hex(colors["LightGreen"]["500"]), duration=2
                           )

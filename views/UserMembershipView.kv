@@ -147,7 +147,7 @@
 
 
 
-<UpdateUserPinView>:
+<UpdateUserPasswordView>:
     MDFloatLayout:
         size_hint: .8, .9
         pos_hint: {"center_x": .5, "center_y": .5}
@@ -167,14 +167,14 @@
                     rows: 2
                     spacing: dp(10)
                     MDLabel:
-                        text : 'Current PIN'
+                        text : 'Current Password'
                         font_style : 'H6'
                         halign : "center"
                         size_hint_x: .7
                         pos_hint: {"center_x": .5, "center_y": .5}
 
                     MDLabel:
-                        id: user_pin_field
+                        id: user_password_field
                         md_bg_color: "8BC34A" # light green
                         font_style : 'H5'
                         #bold: True
@@ -191,7 +191,7 @@
                     orientation: "vertical"
                     spacing: dp(10)
                     MDLabel:
-                        text : 'Set new PIN'
+                        text : 'Set new Password'
                         font_style : 'H6'
                         halign : "center"
                         size_hint_x: .7
@@ -201,7 +201,7 @@
                         pos_hint : {"center_x":.5,"center_y":.5}
                         size_hint_x: .8
                         ClickableTextFieldRound:
-                            id: new_pin
+                            id: new_password
                             pos_hint: {"center_x": .5, "center_y": .5}
 
             MDSeparator:
@@ -213,7 +213,7 @@
                     orientation: "vertical"
                     spacing: dp(10)
                     MDLabel:
-                        text : 'Confirm new PIN'
+                        text : 'Confirm new Password'
                         font_style : 'H6'
                         halign : "center"
                         size_hint_x: .7
@@ -223,7 +223,7 @@
                         pos_hint : {"center_x":.5,"center_y":.5}
                         size_hint_x: .8
                         ClickableTextFieldRound:
-                            id: confirm_pin
+                            id: confirm_password
                             pos_hint: {"center_x": .5, "center_y": .5}
 
             MDSeparator:
@@ -241,11 +241,11 @@
                         icon: "content-save-check"
                         font_size : 15
                         pos_hint: {"center_x": .5, "center_y": .5}
-                        on_press: root.update_pin()
+                        on_press: root.update_password()
 
                     MDLabel:
                         id: error_label
-                        text : '* required fields, PIN must have 6 digits'
+                        text : '* required fields, Password must have at least 6 characters with a least 2 numeric numbers within it'
                         font_style : 'Subtitle2'
                         theme_text_color: "Error"
                         halign : "center"
@@ -271,9 +271,9 @@
                 transition:
                     FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
 
-                UpdateUserPinView:
-                    name: "pin"
-                    id: update_pin_screen
+                UpdateUserPasswordView:
+                    name: "password"
+                    id: update_password_screen
 
                 UserHomeView:
                     name: "home"
@@ -304,10 +304,10 @@
                     MDNavigationDrawerDivider:
 
                     DrawerClickableItem:
-                        icon: "numeric"
-                        text: "Change PIN"
+                        icon: "onepassword"
+                        text: "Change Password"
                         on_press:
-                            manager.current="pin"
+                            manager.current="password"
                             nav_drawer.set_state("close")
 
                     MDNavigationDrawerDivider:

@@ -18,7 +18,7 @@ class Database:
         self.__cursor = self.__db_connection.cursor()
         if not refresh:
             try:
-                self.__cursor.execute("CREATE TABLE users(firstname, lastname, rfid_code, door_number, description, pin_code, qr_code, face_id)"
+                self.__cursor.execute("CREATE TABLE users(firstname, lastname, rfid_code, door_number, description, password, qr_code, face_id)"
                 )
                 self.__cursor.execute("CREATE TABLE admins(username, password)")
                 admins = [("admin", "admin"), ("tech", "setup")]
@@ -144,14 +144,16 @@ class Database:
             print(e)
             return False
 
-    def get_user_by_pin(self, pin:int):
+    def get_user_by_password(self, password:str) -> tuple|None:
         """
-        Get a use from the data base by the input pin
-        :param pin: input pin
+        Get a use from the data base by the input password
+        :param password: input password
         :return: list a user infos if found or None
         """
-        command = f"SELECT firstname, lastname, door_number FROM users WHERE pin_code={pin}"
-        res = self.__cursor.execute(command).fetchall()
+        command = f"SELECT firstname, lastname, door_number FROM users WHERE password=?"
+        password_list = list()
+        password_list.append(password)
+        res = self.__cursor.execute(command, password_list).fetchall()
         print(res)
         if len(res) > 0:
             return res[0]
@@ -175,20 +177,20 @@ class Database:
         else:
             return None
 
-    def update_user_pin(self, user_info, new_user_pin:int) -> bool:
+    def update_user_password(self, user_info, new_user_password:str) -> bool:
         """
         Method used in UserMembership to update the user's PIN
         :param user_info: tuple of user's info in order to find him in the database
-        :param new_user_pin: new PIN
+        :param new_user_password: new PIN
         :return: bool: if the updated processed successfully or not
         """
 
         try:
-            assert len(user_info) == 3 and isinstance(new_user_pin, int), "New user PIN must be am integer and user_info must have a length of 3"
+            assert len(user_info) == 3 and isinstance(new_user_password, str), "New user PIN must be am integer and user_info must have a length of 3"
             end_list = list()
-            end_list.append(new_user_pin)
+            end_list.append(new_user_password)
             end_list.extend(user_info)
-            command = f"UPDATE users SET pin_code=? WHERE firstname=? AND lastname=? AND door_number=?"
+            command = f"UPDATE users SET password=? WHERE firstname=? AND lastname=? AND door_number=?"
             self.__cursor.execute(command, end_list)
             self.__db_connection.commit()
             return True
@@ -238,18 +240,30 @@ class Database:
             print(e)
             return False
 
-    def get_user_pin(self, user_info) -> int|None:
+    def get_user_password(self, user_info) -> str|None:
         """
 
         :param user_info:
         :return:
         """
-        command = "SELECT pin_code FROM users WHERE firstname=? AND lastname=? AND door_number=?"
+        command = "SELECT password FROM users WHERE firstname=? AND lastname=? AND door_number=?"
         res = self.__cursor.execute(command, user_info).fetchall()
         if res[0][0]:
             return res[0][0]
         else:
             return None
+
+    def get_db_password_list(self) -> list:
+        """
+        Get a list of all passwords in the database
+        :return:
+        """
+        pass_list = list()
+        command = "SELECT password FROM users"
+        res = self.__cursor.execute(command).fetchall()
+        for password_col in res:
+            pass_list.append(password_col[0])
+        return pass_list
 
     def get_user_qr_img_path(self, user_info) -> str|None:
         """

@@ -1,11 +1,8 @@
-#: set backgroundColor "8D6E63"
-#: set CardBackgroundColor [35/255,49/255,48/255,1]
+#: import GlobalComponents views.GlobalComponents
 
 
 <LoginOptionCard>:
     padding: dp(5), dp(5), dp(5), dp(15)
-    size_hint: .8, .8
-    pos_hint: {"center_x": .5, "center_y": .5}
     orientation: "vertical"
     md_bg_color : CardBackgroundColor
     elevation: 3
@@ -17,7 +14,7 @@
     MDIconButton:
         id: icon_button
         icon: root.icon_name
-        icon_size: "60sp"
+        icon_size: "100sp"
         pos_hint: {"center_x": .5, "center_y": .5}
         size_hint: 1, .6
         on_release: root.press_callback()
@@ -53,78 +50,67 @@
             height: dp(40)
             pos_hint: {"center_x": .5, "center_y": .5}
 
-        RelativeLayout:
-            MDCard:
-                pos_hint : {"center_x":.5,"center_y":.5}
-                md_bg_color : CardBackgroundColor
-                orientation : "vertical"
-                spacing: dp(10)
-                padding: dp(10)
-                size_hint: .5, .9
-                elevation: 4
-                shadow_offset: (0, 1)
-
-                MDRelativeLayout:
-                    pos_hint : {"center_x":.5,"center_y":.5}
-                    size_hint: .6, .3
-                    ClickableTextFieldRound:
-                        id: pin_field
-                        pos_hint : {"center_x":.5,"center_y":.5}
-
-                MDGridLayout:
-                    id: numpad
-                    cols: 3
-                    rows: 4
-                    spacing: dp(5)
-
-                MDLabel:
-                    id: error_label
-                    font_style : 'Subtitle2'
-                    text: "* required field"
-                    halign : "center"
-                    size_hint_y: None
-                    height: dp(15)
-                    pos_hint: {"center_x": .5, "center_y": .5}
-                    theme_text_color: "Error"
-
-                MDRelativeLayout:
-                    pos_hint : {"center_x":.5,"center_y":.5}
-                    size_hint: .8, .2
-                    BoxLayout:
-                        spacing: dp(5)
-                        CheckBox:
-                            id: go2membership
-                            pos_hint : {"center_x":.5,"center_y":.5}
-                            size_hint_x: .1
-
-                        MDLabel:
-                            text : "Go to membership"
-                            font_style : 'Subtitle1'
-                            halign : "left"
-
-                        MDFillRoundFlatIconButton:
-                            pos_hint: {"center_x": .5, "center_y": .5}
-                            text: "Login"
-                            icon: "login"
-                            on_release:
-                                root.login_pin()
-
         MDRelativeLayout:
-            pos_hint : {"center_x":.5,"center_y":.5}
-            size_hint: .7, .4
+            size_hint: .8, .5
+            pos_hint: {"center_x": .5, "center_y": .5}
             BoxLayout:
-                spacing: dp(5)
-                MDFloatLayout:
-                    LoginOptionCard:
-                        id: face_recon_login
-                        icon_name: "face-recognition"
-                        text_option: "Login with Face Recognition"
-                        press_callback: root.login_face_id
+                spacing: dp(20)
+                MDCard:
+                    pos_hint : {"center_x":.5,"top":.9}
+                    md_bg_color : CardBackgroundColor
+                    orientation : "vertical"
+                    spacing: dp(10)
+                    padding: dp(10)
+                    size_hint_y: .4
+                    elevation: 4
+                    shadow_offset: (0, 1)
 
-                MDFloatLayout:
-                    LoginOptionCard:
-                        id: qrcode_login
-                        icon_name: "qrcode-scan"
-                        text_option: "Login with QR Code"
-                        press_callback: root.login_qr_code_cam
+                    MDRelativeLayout:
+                        pos_hint : {"center_x":.5,"center_y":.5}
+                        size_hint: .6, .3
+                        ClickableTextFieldRound:
+                            id: password_field
+                            pos_hint : {"center_x":.5,"center_y":.5}
+
+                    MDLabel:
+                        id: error_label
+                        font_style : 'Subtitle2'
+                        text: "* required field"
+                        halign : "center"
+                        size_hint_y: None
+                        height: dp(15)
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        theme_text_color: "Error"
+
+                    MDRelativeLayout:
+                        pos_hint : {"center_x":.5,"center_y":.5}
+                        size_hint: .8, .2
+                        BoxLayout:
+                            spacing: dp(5)
+                            CheckBox:
+                                id: go2membership
+                                pos_hint : {"center_x":.5,"center_y":.5}
+                                size_hint_x: .1
+
+                            MDLabel:
+                                text : "Go to membership"
+                                font_style : 'Subtitle1'
+                                halign : "left"
+
+                            MDFillRoundFlatIconButton:
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                                text: "Login"
+                                icon: "login"
+                                on_release:
+                                    root.login_password()
+
+                LoginOptionCard:
+                    id: face_recon_login
+                    icon_name: "face-recognition"
+                    text_option: "Login with Face Recognition"
+                    press_callback: root.login_face_id
+                    size_hint: .7, .4
+                    pos_hint: {"center_x": .5, "top":.9}
+                    elevation: 4
+                    shadow_offset: (0, 1)
 

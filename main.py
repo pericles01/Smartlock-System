@@ -79,21 +79,8 @@ class SmartlockApp(MDApp):
             self.rpi_cam = True
         webcam.release()
 
-        self.root.ids.welcome_view.ids.pin_field.ids.password_field.hint_text = "Enter your PIN"
-        for i in range(1, 10):
-            btn = Button(text=f"{i}")
-            btn.bind(on_release=self.root.ids.welcome_view.on_release_num_btn_callback)
-            self.root.ids.welcome_view.ids.numpad.add_widget(btn)
+        self.root.ids.welcome_view.ids.password_field.ids.password_field.hint_text = "Enter password"
 
-        zero_btn = Button(text=str(0))
-        zero_btn.bind(on_release=self.root.ids.welcome_view.on_release_num_btn_callback)
-        self.root.ids.welcome_view.ids.numpad.add_widget(zero_btn)
-
-        del_btn = Button(text="Del")
-        del_btn.bind(on_release=self.root.ids.welcome_view.on_release_del_btn_callback)
-        self.root.ids.welcome_view.ids.numpad.add_widget(del_btn)
-
-        #self.root.ids.welcome_view.ids.pin_field.ids.password_field.bind(focus=self.root.ids.welcome_view.on_focus)
         self.manager.push("welcome")
 
 
