@@ -21,11 +21,6 @@ class Buzzer():
     def __init__(self, port):
         self._port = port
 
-    def on(self):
-        pass
-    def off(self):
-        pass
-
 class SetupView(MDScreen):
     isSetup = BooleanProperty()
     start_number = 0

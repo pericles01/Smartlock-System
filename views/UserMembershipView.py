@@ -185,16 +185,19 @@ class RegisterFaceReconView(MDScreen):
     
     def snap_save(self, *args):
         if self._is_rpi:
-            return self._rpi_snap()
+            if MDApp.get_running_app().rpi_cam:
+                return self._rpi_cam_snap()
+            else:
+                return self._webcam_snap()
         else:
-            return self._common_os_snap()
+            return self._webcam_snap()
 
     def _show_on_snap_dialog(self, _image):
         cv2.imwrite(self._no_face_img_path, _image)
         self.snapshot_dialog_content.ids.image.source = self._no_face_img_path
         self.snapshot_dialog_content.ids.image.reload() 
 
-    def _rpi_snap(self):
+    def _rpi_cam_snap(self):
         if self._picam2 is None:
             self._picam2 = Picamera2()
             config = self._picam2.create_still_configuration({"size": (400, 400), "format": "RGB888"})
@@ -234,7 +237,7 @@ class RegisterFaceReconView(MDScreen):
         else:
             self.__time_out += 1
     
-    def _common_os_snap(self):
+    def _webcam_snap(self):
         if self._cv_cam is None:
             self._cv_cam = cv2.VideoCapture(0)
         if self._cv_cam.isOpened():
@@ -284,7 +287,7 @@ class RegisterFaceReconView(MDScreen):
         self._show_on_snap_dialog(image)
         self.__time_out = 0
         self.__cnt = 0
-        if self._is_rpi:
+        if MDApp.get_running_app().rpi_cam:
             self._picam2.stop_preview()
             self._picam2.stop()
         else:

@@ -1,4 +1,4 @@
-from kivy.properties import StringProperty, BooleanProperty
+from kivy.properties import StringProperty
 from kivymd.uix.card import MDCard
 import os
 from kivymd.toast import toast
