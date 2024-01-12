@@ -53,20 +53,31 @@ def test_rpi_cam():
     picam2.stop()
 
 def test_webcam():
-    cap = cv2.VideoCapture(0)
+    webcam = cv2.VideoCapture(2)
+    builtin_cam = cv2.VideoCapture(0)
 
     while True:
-        ret, frame = cap.read()
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        cv2.imshow('frame', gray)
+        ret, frame = webcam.read()
+        if ret:
+            cv2.imshow('webcam', frame)
+        else:
+            print("not webcam")
+
+        ret1, frame1 = builtin_cam.read()
+        if ret1:
+            cv2.imshow('built-in camera', frame1)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    cap.release()
+
+    webcam.release()
+    builtin_cam.release()
     cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
-    if is_raspberrypi():
-        test_rpi_cam()
-    else:
-        test_webcam()
+    # if is_raspberrypi():
+    #     test_rpi_cam()
+    # else:
+    #     test_webcam()
+    test_webcam()
