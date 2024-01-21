@@ -20,13 +20,15 @@ class Database:
             try:
                 self.__cursor.execute("CREATE TABLE users(firstname, lastname, rfid_code, door_number, description, password, qr_code, face_id)"
                 )
-                self.__cursor.execute("CREATE TABLE admins(username, password)")
-                admins = [("admin", "admin"), ("tech", "setup")]
-                self.__cursor.executemany("INSERT INTO admins(username, password) VALUES (?, ?)", admins)
+
+                self.__cursor.execute("CREATE TABLE admins(id, username, password)")
+                admins = [(1, "admin", "admin"), (2, "tech", "setup"), (3, "urgency_uid", "CD0566AE")]
+                self.__cursor.executemany("INSERT INTO admins(id, username, password) VALUES (?, ?, ?)", admins)
                 self.__db_connection.commit()
 
                 print("Table Users created")
                 print(f"Content: {self.show_users_table(full=True)}")
+
                 print("Table Admins created")
                 print(f"Content: {self.show_admin_table()}")
 
@@ -88,7 +90,7 @@ class Database:
         return res.fetchall()
 
     def show_admin_table(self) -> list:
-        res = self.__cursor.execute("SELECT * FROM admins ORDER BY username")
+        res = self.__cursor.execute("SELECT * FROM admins ORDER BY id")
         return res.fetchall()
 
     def update_user_basic_infos(self, user_info:list, new_infos:list):
@@ -125,6 +127,18 @@ class Database:
             print(e)
             return False
 
+    def update_urgency_uid(self, new_uid):
+        try:
+            end_list = list()
+            end_list.append(new_uid)
+            end_list.append("urgency_uid")
+            command = "UPDATE admins SET password=? WHERE username=?"
+            self.__cursor.execute(command, end_list)
+            self.__db_connection.commit()
+            return True
+        except (AssertionError, sqlite3.OperationalError) as e:
+            print(e)
+            return False
 
 
     def delete_user(self, user_info)->bool:

@@ -2,12 +2,57 @@
 #: import SetupView views.SetupView
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
+
 <Toolbar@MDTopAppBar>:
     title: "Technician Membership"
     anchor_title: "center"
     type_height: "small"
     left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
     right_action_items: [["home", lambda x: app.manager.push("welcome"), "home"]]
+
+
+<UpdateEmergencyUIDView>
+    MDCard:
+        size_hint: .5, .3
+        spacing: dp(20)
+        padding: dp(10)
+        pos_hint: {"center_x": .5, "top": .8}
+        orientation: "vertical"
+        elevation: 4
+        shadow_offset: (0, 1)
+        md_bg_color : CardBackgroundColor
+
+        MDLabel:
+            text : 'Update emergency UID'
+            font_style : 'H6'
+            halign : "center"
+            #size_hint_x: .7
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        MDSeparator:
+
+        MDLabel:
+            text : "Please Scan the new emergency card"
+            font_style : 'H6'
+            halign : "center"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            theme_text_color: "Error"
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        MDTextField:
+            id: emergency_uid_field
+            max_text_length: 20
+            multiline: False
+            mode: "round"
+            password : True
+            icon_left: "account-card"
+            size_hint_x : None
+            width : 220
+            pos_hint : {"center_x":.5, "top": 1}
+            on_text_validate: root.show_update_confirmation_dialog()
 
 
 <TechnicianMembershipView>:
@@ -26,13 +71,16 @@
                 FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
 
             MDScreen:
-                name: "update"
+                name: "update_doors"
                 MDLabel:
                     text: "Update screen"
                     halign: "center"
             
             SetupView:
                 name: "setup"
+
+            UpdateEmergencyUIDView:
+                name: "update_emergency_card"
 
         MDNavigationDrawer:
             id: nav_drawer
@@ -51,10 +99,19 @@
                 MDNavigationDrawerDivider:
 
                 DrawerClickableItem:
+                    icon: "account-card"
+                    text: "Update urgency card"
+                    on_press:
+                        manager.current="update_emergency_card"
+                        nav_drawer.set_state("close")
+
+                MDNavigationDrawerDivider:
+
+                DrawerClickableItem:
                     icon: "update"
                     text: "Update doors"
                     on_press:
-                        manager.current="update"
+                        manager.current="update_doors"
                         nav_drawer.set_state("close")
 
                 MDNavigationDrawerDivider:
