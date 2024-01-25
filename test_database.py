@@ -33,14 +33,23 @@ if __name__ == '__main__':
     # user2delete = ('John', 'Wick', 9150)
     # db.delete_user(user2delete)
 
-    content = db.show_users_table()
-    print(f"Table content length: {len(content)}")
-    print("Content:")
-    print(f"{content}")
+    # content = db.show_users_table()
+    # print(f"Table content length: {len(content)}")
+    # print("Content:")
+    # print(f"{content}")
+    #
+    # rfid = "CBD4974A"
+    # user = db.get_user_by_rfid(rfid)
+    # print(f"User: {user}")
+    #
+    # pin = 1234
+    # user = db.get_user_by_pin(pin)
+    # print(f"User: {user}")
 
-    rfid = 7895
-    user = db.get_user_by_rfid(rfid)
-    print(f"User: {user}")
+    pass_list = db.get_db_password_list()
+    print(pass_list)
+    if "Peri01" in pass_list:
+        print("True")
 
 
 # path = os.path.join(os.getcwd(), ".cache/door_pos_info.json")

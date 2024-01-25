@@ -6,7 +6,7 @@
         pos_hint : {"center_x":.5,"center_y":.5}
         md_bg_color : CardBackgroundColor
         padding : dp(15)
-        spacing : dp(20)
+        spacing : dp(10)
         orientation : "vertical"
 
         MDLabel:
@@ -25,12 +25,22 @@
             halign : "center"
             pos_hint: {"center_x": .5, "center_y": .5}
             theme_text_color: "Error"
+            size_hint_y: None
+            height: self.texture_size[1]
 
-        MDIconButton:
-            icon: "account-card"
-            icon_size: "60sp"
-            pos_hint: {"center_x": .5, "center_y": .5}
-            theme_icon_color: "Error" #app.theme_cls.primary_color
+        MDRelativeLayout:
+            size_hint_y: .3
+            pos_hint : {"center_x":.5, "center_y": 1}
+            MDTextField:
+                id: urgency_card_field
+                max_text_length: 20
+                multiline: False
+                mode: "round"
+                password : True
+                icon_left: "account-card"
+                size_hint_x : None
+                width : 220
+                pos_hint : {"center_x":.5, "top": 1}
 
 
 <UpdateCredentialView>:
@@ -78,41 +88,48 @@
         MDSeparator:
 
         MDRelativeLayout:
-            size_hint_x: .6
+            size_hint_x: .8
             pos_hint: {"center_x": .5, "center_y": .5}
-            MDGridLayout:
-                rows: 2
+            MDBoxLayout:
+                orientation: "vertical"
                 spacing: dp(15)
 
                 MDLabel:
                     text : 'Enter new password'
                     font_style : 'H6'
                     halign : "center"
-                    size_hint: .5, .5
+                    size_hint: .7, .5
                     pos_hint: {"center_x": .5, "center_y": .5}
 
-                ClickableTextFieldRound:
-                    id: new_password_widget
-                    pos_hint: {"center_x": .5, "center_y": .5}
+                MDRelativeLayout:
+                    pos_hint : {"center_x":.5,"center_y":.5}
+                    size_hint_x: .6
+                    ClickableTextFieldRound:
+                        id: new_password_widget
+                        pos_hint: {"center_x": .5, "center_y": .5}
 
         MDSeparator:
 
         MDRelativeLayout:
-            size_hint_x: .6
+            size_hint_x: .8
             pos_hint: {"center_x": .5, "center_y": .5}
-            MDGridLayout:
-                rows: 2
+            MDBoxLayout:
+                orientation: "vertical"
                 spacing: dp(15)
 
                 MDLabel:
                     text : 'Confirm new password'
                     font_style : 'H6'
                     halign : "center"
-                    size_hint: .5, .5
+                    size_hint: .7, .5
                     pos_hint: {"center_x": .5, "center_y": .5}
 
-                ClickableTextFieldRound:
-                    id: new_password_widget_confirmation
+                MDRelativeLayout:
+                    pos_hint : {"center_x":.5,"center_y":.5}
+                    size_hint_x: .6
+                    ClickableTextFieldRound:
+                        id: new_password_widget_confirmation
+                        pos_hint: {"center_x": .5, "center_y": .5}
 
         MDSeparator:
 

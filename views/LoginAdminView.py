@@ -1,4 +1,4 @@
-from kivy.properties import StringProperty, BooleanProperty
+from kivy.properties import StringProperty
 from kivymd.uix.card import MDCard
 import os
 from kivymd.toast import toast
@@ -21,7 +21,7 @@ class LoginAdminCard(MDCard):
                 self.__db.db_init(refresh=True)
                 admins = self.__db.show_admin_table()
                 print(f"Admins list: {admins}")
-                if self.ids.username_field.text.strip() == admins[1][0] and self.ids.password_widget.ids.password_field.text.strip() == admins[1][1]:
+                if self.ids.username_field.text.strip() == admins[1][1] and self.ids.password_widget.ids.password_field.text.strip() == admins[1][2]:
                     manager.push("technician_membership")
                     # clear the fields
                     self.ids.username_field.text = ""
@@ -30,7 +30,7 @@ class LoginAdminCard(MDCard):
                     toast(f"Successfully logged in technician membership",
                           background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
                           )
-                elif self.ids.username_field.text.strip() == admins[0][0] and self.ids.password_widget.ids.password_field.text.strip() == admins[0][1]:
+                elif self.ids.username_field.text.strip() == admins[0][1] and self.ids.password_widget.ids.password_field.text.strip() == admins[0][2]:
                     manager.push("admin_membership")
                     # clear the fields
                     self.ids.username_field.text = ""

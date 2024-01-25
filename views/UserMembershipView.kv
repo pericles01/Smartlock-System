@@ -2,6 +2,47 @@
 #: import UserHomeView views.UserHomeView
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 
+
+<ConfidentialityConfirmationContent>:
+    MDCard:
+        pos_hint : {"center_x":.5,"center_y":.5}
+        md_bg_color : CardBackgroundColor
+        orientation : "vertical"
+        spacing: dp(10)
+        padding: dp(10)
+        MDScrollView:
+            MDLabel:
+                id: label
+                text : ""
+                font_style : 'H6'
+                halign : "center"
+                size_hint: 1, None
+                height: dp(1100)
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDSeparator:
+
+        MDGridLayout:
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint_y: .1
+            cols: 2
+            spacing: dp(15)
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: yes_button
+                    text: "Yes"
+                    icon: "check"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    #on_release: root.go2snapshot_dialog()
+
+            MDRelativeLayout:
+                MDFillRoundFlatIconButton:
+                    id: no_button
+                    text: "No"
+                    icon: "exit-to-app"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+
 <SnapshotDialogContent>:
     MDCard:
         pos_hint : {"center_x":.5,"center_y":.5}
@@ -64,7 +105,7 @@
             size_hint: 1, .6
             theme_icon_color: "Error" #"Custom"
             #icon_color: app.theme_cls.primary_color
-            on_release: root.open_snapshot_dialog()
+            on_release: root.open_confidentiality_confirmation_dialog()
 
 <GenerateQRCodeView>:
     MDFloatLayout:
@@ -106,7 +147,7 @@
 
 
 
-<UpdateUserPinView>:
+<UpdateUserPasswordView>:
     MDFloatLayout:
         size_hint: .8, .9
         pos_hint: {"center_x": .5, "center_y": .5}
@@ -126,14 +167,14 @@
                     rows: 2
                     spacing: dp(10)
                     MDLabel:
-                        text : 'Current PIN'
+                        text : 'Current Password'
                         font_style : 'H6'
                         halign : "center"
                         size_hint_x: .7
                         pos_hint: {"center_x": .5, "center_y": .5}
 
                     MDLabel:
-                        id: user_pin_field
+                        id: user_password_field
                         md_bg_color: "8BC34A" # light green
                         font_style : 'H5'
                         #bold: True
@@ -146,19 +187,22 @@
             MDRelativeLayout:
                 size_hint_x: .6
                 pos_hint: {"center_x": .5, "center_y": .5}
-                MDGridLayout:
-                    rows: 2
+                MDBoxLayout:
+                    orientation: "vertical"
                     spacing: dp(10)
                     MDLabel:
-                        text : 'Set new PIN'
+                        text : 'Set new Password'
                         font_style : 'H6'
                         halign : "center"
                         size_hint_x: .7
                         pos_hint: {"center_x": .5, "center_y": .5}
 
-                    ClickableTextFieldRound:
-                        id: new_pin
-                        pos_hint: {"center_x": .5, "center_y": .5}
+                    MDRelativeLayout:
+                        pos_hint : {"center_x":.5,"center_y":.5}
+                        size_hint_x: .8
+                        ClickableTextFieldRound:
+                            id: new_password
+                            pos_hint: {"center_x": .5, "center_y": .5}
 
             MDSeparator:
 
@@ -169,15 +213,18 @@
                     orientation: "vertical"
                     spacing: dp(10)
                     MDLabel:
-                        text : 'Confirm new PIN'
+                        text : 'Confirm new Password'
                         font_style : 'H6'
                         halign : "center"
                         size_hint_x: .7
                         pos_hint: {"center_x": .5, "center_y": .5}
 
-                    ClickableTextFieldRound:
-                        id: confirm_pin
-                        pos_hint: {"center_x": .5, "center_y": .5}
+                    MDRelativeLayout:
+                        pos_hint : {"center_x":.5,"center_y":.5}
+                        size_hint_x: .8
+                        ClickableTextFieldRound:
+                            id: confirm_password
+                            pos_hint: {"center_x": .5, "center_y": .5}
 
             MDSeparator:
 
@@ -194,11 +241,11 @@
                         icon: "content-save-check"
                         font_size : 15
                         pos_hint: {"center_x": .5, "center_y": .5}
-                        on_press: root.update_pin()
+                        on_press: root.update_password()
 
                     MDLabel:
                         id: error_label
-                        text : '* required fields, PIN must have 6 digits'
+                        text : '* required fields, Password must have at least 6 characters with a least 2 numeric numbers within it'
                         font_style : 'Subtitle2'
                         theme_text_color: "Error"
                         halign : "center"
@@ -224,9 +271,9 @@
                 transition:
                     FadeTransition(duration=.2, clearcolor=app.theme_cls.bg_dark)
 
-                UpdateUserPinView:
-                    name: "pin"
-                    id: update_pin_screen
+                UpdateUserPasswordView:
+                    name: "password"
+                    id: update_password_screen
 
                 UserHomeView:
                     name: "home"
@@ -257,10 +304,10 @@
                     MDNavigationDrawerDivider:
 
                     DrawerClickableItem:
-                        icon: "numeric"
-                        text: "Change PIN"
+                        icon: "onepassword"
+                        text: "Change Password"
                         on_press:
-                            manager.current="pin"
+                            manager.current="password"
                             nav_drawer.set_state("close")
 
                     MDNavigationDrawerDivider:

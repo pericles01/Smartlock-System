@@ -54,12 +54,7 @@ pip3 install pyserial pandas
 pip3 install qrcode
 pip3 install opencv-python dlib face_recognition
 pip3 install scikit-learn
+pip3 install gpiozero
 
 # enable hardware acceleration
 sudo adduser "$USER" render
-
-# If a touchscreen is used, edit the file ~/.kivy/config.ini and go to the [input] section. 
-# Add this:
-mouse = mouse
-mtdev_%(name)s = probesysfs,provider=mtdev
-hid_%(name)s = probesysfs,provider=hidinput

@@ -1,16 +1,15 @@
 import sys
-
+from kivy.uix.button import Button
 from kivy.utils import get_color_from_hex
 from kivymd.app import MDApp
 from kivymd.color_definitions import colors
 from kivymd.toast import toast
 from kivymd.uix.screenmanager import MDScreenManager
-from kivy.properties import ObjectProperty, NumericProperty
-#import cProfile
+from kivy.properties import ObjectProperty, BooleanProperty
 from manage.SerialHub import SerialHub
 from manage.Database import Database
-from views.AdminMembershipView import AdminMembershipView
 import serial
+import  cv2
 
 class NavigationScreenManager(MDScreenManager):
     screen_stack = []
@@ -42,6 +41,7 @@ class NavigationScreenManager(MDScreenManager):
 class SmartlockApp(MDApp):
     manager = ObjectProperty(None)
     found_user = ObjectProperty()
+    rpi_cam = BooleanProperty()
 
     def build(self):
         self.theme_cls.theme_style = 'Dark'
@@ -52,23 +52,36 @@ class SmartlockApp(MDApp):
         return self.manager
 
     def on_start(self):
-        #self.profile = cProfile.Profile()
-        #self.profile.enable()
-        cnt = 0
+        # test if the serial hub is connected
         hub = SerialHub()
 
         try:
-            door_pos_info = hub.send_status_command()
+            _ = hub.send_status_command()
         except (serial.SerialException, ValueError) as e:
             print(e)
             print("Please make sure that the Hub device is connected correctly")
             #print("Exiting...")
             #sys.exit(1)
 
+        # create and configure the database if not existing
+        db = Database()
+        db.db_init()
 
-    #def on_stop(self):
-        #self.profile.disable()
-        #self.profile.dump_stats('SmartlockApp.profile')
+        # guess the connected camera typ: webcam or rpi cam
+        webcam = cv2.VideoCapture(0)
+        if webcam.isOpened():
+            result, _ = webcam.read()
+            if result:
+                print("webcam detected")
+                self.rpi_cam = False
+        else:
+            print("rpi cam detected")
+            self.rpi_cam = True
+        webcam.release()
+
+        self.root.ids.welcome_view.ids.password_field.ids.password_field.hint_text = "Enter password"
+
+        self.manager.push("welcome")
 
 
 
