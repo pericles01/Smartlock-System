@@ -55,11 +55,14 @@ class WelcomeView(MDScreen):
         self._cnt = int()
 
     def _on_text_validate(self, instance):
-        uid = instance.text.strip()
-        print(f"Text: {uid} validated")
+        data = instance.text.strip()
+        print(f"Text: {data} validated")
         self.ids.password_field.ids.password_field.text = ""
         self.ids.password_field.ids.password_field.focus = True
-        self.login_rfid(uid)
+        if self._db.get_user_by_rfid(data):
+            self.login_rfid(data)
+        else:
+            self.login_qr_code_reader(data)
 
     def on_pre_enter(self, *args):
         self._db.db_init(refresh=True)
@@ -88,21 +91,14 @@ class WelcomeView(MDScreen):
         # reset
         self.found_user = None
 
-        user = self._db.get_user_by_rfid(rfid_code)
-        if user:
-            self.found_user = user
-            if self.ids.go2membership.active:
-                self._go2user_membership()
-                toast(f"Successfully login into your membership",
-                      background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
-                      )
-            else:
-                self._open_door_callback(self.found_user[2])
-                Clock.schedule_once(self._refresh_welcome_screen, 3)
-
+        self.found_user = self._db.get_user_by_rfid(rfid_code)
+        if self.ids.go2membership.active:
+            self._go2user_membership()
+            toast(f"Successfully login into your membership",
+                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                  )
         else:
-            toast(f"User not found, please try again!!",
-                  background=get_color_from_hex(colors["Red"]["500"]), duration=2)
+            self._open_door_callback(self.found_user[2])
             Clock.schedule_once(self._refresh_welcome_screen, 3)
 
     def login_password(self):
