@@ -205,14 +205,11 @@ class AdminMembershipView(MDScreen):
                 try:
                     firstname = self.user_info_content.ids.firstname_field.text.strip()
                     lastname = self.user_info_content.ids.lastname_field.text.strip()
-                    rfid_code = int(self.user_info_content.ids.rfid_field.text.strip())
+                    rfid_code = self.user_info_content.ids.rfid_field.text.strip()
                     door_number = int(self.user_info_content.ids.door_number_field.text.strip())
                     user_description = self.user_info_content.ids.description_field.text.strip()
-                    toast(f"Successfully edited user {firstname}, {lastname}",
-                          background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
-                    )
 
-                    old_user_infos = [start_info[0][0].strip(), start_info[0][1].strip(), int(start_info[0][2].strip())]
+                    old_user_infos = [start_info[0][0].strip(), start_info[0][1].strip(), start_info[0][2].strip()]
                     new_user_info = [firstname, lastname, rfid_code, door_number, user_description]
                     self._db.db_init(refresh=True)
                     if self._db.update_user_basic_infos(old_user_infos, new_user_info):
@@ -229,6 +226,9 @@ class AdminMembershipView(MDScreen):
                                 }
                             )
                         self.ids.rv.data = rv_data
+                        toast(f"Successfully edited user {firstname}, {lastname}",
+                              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                              )
                         print(" ")
                         print("--------------")
                         print("Update User test")
@@ -239,9 +239,13 @@ class AdminMembershipView(MDScreen):
                         print("Content:")
                         print(f"{self.user_data}")
                         self.user_info_dialog.dismiss()
+                    else:
+                        toast(f"Error while updating, please try again",
+                              background=get_color_from_hex(colors["Red"]["500"]), duration=3
+                              )
 
-                except ValueError:
-                    self.user_info_content.ids.error_label.text = "RFID Code and door number must be a numeric number"
+                except ValueError as e:
+                    self.user_info_content.ids.error_label.text = "Door number must be a numeric number"
             else:
                 self.user_info_content.ids.error_label.text = "No changes in user's informations"
 
@@ -276,12 +280,9 @@ class AdminMembershipView(MDScreen):
 
 
     def remove_item_callback(self, instance, *args):
-        #self.ids.md_list.remove_widget(instance)
         user_info = (instance.text.split('|'), instance.description)
-        toast(f"Successfully deleted user {user_info[0][0]}, {user_info[0][1]}",
-              background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
-              )
-        user2delete = (user_info[0][0].strip(), user_info[0][1].strip(), int(user_info[0][2].strip()))
+
+        user2delete = (user_info[0][0].strip(), user_info[0][1].strip(), user_info[0][2].strip())
         self._db.db_init(refresh=True)
         if self._db.delete_user(user2delete):
             # auto update the view
@@ -298,6 +299,9 @@ class AdminMembershipView(MDScreen):
                     }
                 )
             self.ids.rv.data = rv_data
+            toast(f"Successfully deleted user {user_info[0][0]}, {user_info[0][1]}",
+                  background=get_color_from_hex(colors["LightGreen"]["500"]), duration=3
+                  )
             print(" ")
             print("--------------")
             print("Delete User test")
@@ -307,6 +311,10 @@ class AdminMembershipView(MDScreen):
             print("Content:")
             print(f"{self.user_data}")
             self.delete_confirmation_dialog.dismiss()
+        else:
+            toast(f"Error while deleting, {user_info[0][0]}, {user_info[0][1]} please try again",
+                  background=get_color_from_hex(colors["Red"]["500"]), duration=3
+                  )
 
 
     def show_delete_confirmation_dialog(self, instance):
