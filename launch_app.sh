@@ -1,3 +1,3 @@
-source /home/pi/Vapp/bin/activate
-cd /home/pi/Desktop/Smartlock-System
+cd /home/<user>/Desktop/Smartlock-System
+source ../Vapp/bin/activate
 python3 main.py

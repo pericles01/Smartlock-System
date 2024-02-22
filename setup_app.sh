@@ -4,6 +4,7 @@
 # https://kivymd.readthedocs.io/en/1.1.1/getting-started/
 
 # update os packages & install python, pip
+cd ..
 sudo apt update
 sudo apt install python3 python3-pip
 
