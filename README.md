@@ -4,7 +4,9 @@ This project is a fullstack smartlock system on a raspberry pi. The user can be 
 ## Intallation
 to setup the system environment and dependencies run in terminal
 ```bash
+cd /home/pi/Desktop
 git clone <this_reop_git_url>
+cd Smartlock-System
 bash setup_app.sh
 ```
 

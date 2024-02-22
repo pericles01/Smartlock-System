@@ -46,6 +46,7 @@ export KIVY_DEPS_ROOT=$(pwd)/kivy-dependencies
 echo $KIVY_DEPS_ROOT
 
 # Install the stable version of Kivy & KivyMD
+cd ..
 pip3 install "kivy[base]" kivy_examples --no-binary kivy
 pip3 install kivymd
 
