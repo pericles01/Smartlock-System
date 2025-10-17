@@ -1,5 +1,5 @@
 ## Description
-This project is a fullstack smartlock system on a raspberry pi. The user can be authentificated with eiter RFID, QR-Code, Password or Face recognition
+This project is a fullstack smartlock system on a raspberry pi. The user can be authentificated with either RFID, QR-Code, Password or Face recognition
 
 ## Intallation
 to setup the system environment and dependencies run in terminal. Change <user> with your rpi username, also in the launch_app.sh
