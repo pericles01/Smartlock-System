@@ -13,10 +13,10 @@ bash setup_app.sh
 ## Configuration
 - If you are using a touch display, you need to configure Kivy to use it as an input source. 
     To do this, edit the file ~/.kivy/config.ini and go to the [input] section. Remove this line:
-    hid_%(name)s = probesysfs,provider=hidinput or add this line if it fits the touch screen better:
-    mtdev_%(name)s = probesysfs,provider=mtdev
-- Go to the [graphics] section and change the value of 'fullscreen' like this: fullscreen = 1. Because the value: 0 means no fullscreen
-- On the [kivy] section change the value of 'keyboard_mode' like this:  keyboard_mode = systemanddock
+    ``hid_%(name)s = probesysfs,provider=hidinput`` or add this line if it fits the touch screen better:
+    ``mtdev_%(name)s = probesysfs,provider=mtdev``
+- Go to the [graphics] section and change the value of 'fullscreen' like this: ``fullscreen = 1``. Because the value: 0 means no fullscreen
+- On the [kivy] section change the value of 'keyboard_mode' like this:  ``keyboard_mode = systemanddock``
 ## To launch the app
 ```bash
 bash launch_app.sh
